@@ -195,7 +195,7 @@ public class SpigotEntityTrackerEntry extends EntityTrackerEntry {
 				}
 			}
 		}
-		if (((a > 0) && ((a % updateInterval) == 0)) || entity.impulse || hasSignificantVelocity()) {
+		if (((a > 0) && ((a % updateInterval) == 0)) || entity.impulse) {
 			entity.impulse = false;
 			if (entity.isPassenger()) {
 				updateRotationIfChanged();
@@ -228,12 +228,7 @@ public class SpigotEntityTrackerEntry extends EntityTrackerEntry {
 			float eHeadYaw = entity.getHeadRotation();
 			if (Math.abs(eHeadYaw - lastHeadYaw) >= 1) {
 				lastHeadYaw = eHeadYaw;
-				if (!(entity instanceof EntityArrow)) {
-					broadcast(new PacketPlayOutEntityHeadRotation(entity, (byte) MathHelper.d((eHeadYaw * 256.0f) / 360.0f)));
-				}
-				if (entity instanceof EntityPlayer) {
-					broadcast(new PacketPlayOutEntityTeleport(entity));
-				}
+				broadcast(new PacketPlayOutEntityHeadRotation(entity, (byte) MathHelper.d((eHeadYaw * 256.0f) / 360.0f)));
 			}
 		}
 		if (entity.getDataWatcher().a()) {
@@ -345,10 +340,6 @@ public class SpigotEntityTrackerEntry extends EntityTrackerEntry {
 				a(entityplayer);
 			}
 		}
-	}
-
-	private boolean hasSignificantVelocity() {
-		return Math.abs(entity.motX) > 1 || Math.abs(entity.motY) > 1 || Math.abs(entity.motZ) > 1;
 	}
 
 	protected void addTrackedPlayer(EntityPlayer entityplayer) {
