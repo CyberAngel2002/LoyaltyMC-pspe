@@ -60,7 +60,7 @@ public class PEBlocks {
 			if (peMappings.has(data.getAsString())) {
 				PEBlock peBlock = new PEBlock(JsonUtils.getJsonObject(peMappings, data.getAsString()));
 				pcToPeRuntimeId[i] = peBlocks.indexOf(peBlock);
-				System.out.println("REMAPPED [" + i + "] (" + data.getAsString() + ") TO: " + peBlock.getName() + ":" + peBlock.getData());
+//				System.out.println("REMAPPED [" + i + "] (" + data.getAsString() + ") TO: " + peBlock.getName() + ":" + peBlock.getData());
 			}
 		}
 		//Specify water block for waterlog remapping.
