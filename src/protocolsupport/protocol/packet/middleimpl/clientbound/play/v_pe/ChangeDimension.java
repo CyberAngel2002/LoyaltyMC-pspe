@@ -7,7 +7,6 @@ import protocolsupport.listeners.InternalPluginMessageRequest;
 import protocolsupport.protocol.ConnectionImpl;
 import protocolsupport.protocol.packet.middle.clientbound.play.MiddleChangeDimension;
 import protocolsupport.protocol.packet.middleimpl.ClientBoundPacketData;
-import protocolsupport.protocol.packet.middleimpl.clientbound.login.v_pe.LoginSuccess;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
 import protocolsupport.protocol.typeremapper.pe.PEPacketIDs;
 import protocolsupport.protocol.utils.networkentity.NetworkEntity;
@@ -63,7 +62,6 @@ public class ChangeDimension extends MiddleChangeDimension {
 				packets.add(Chunk.createEmptyChunk(version, new ChunkCoord(x, z)));
 			}
 		}
-		packets.add(SetPosition.create(player, 0, posY, 0, 0, 0, SetPosition.ANIMATION_MODE_TELEPORT));
 	}
 
 	public static int getPeDimensionId(Environment dimId) {

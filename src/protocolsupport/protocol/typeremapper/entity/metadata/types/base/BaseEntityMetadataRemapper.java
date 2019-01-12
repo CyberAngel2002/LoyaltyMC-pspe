@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import protocolsupport.ProtocolSupport;
-import protocolsupport.api.ProtocolVersion;
 import protocolsupport.api.chat.components.BaseComponent;
 import protocolsupport.api.unsafe.pemetadata.PEMetaProviderSPI;
 import protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe.EntityMetadata.PeMetaBase;
@@ -64,8 +63,8 @@ public class BaseEntityMetadataRemapper extends EntityMetadataRemapper {
 					remapped.put(PeMetaBase.RIDER_POSITION, new DataWatcherObjectVector3fLe(data.getRiderPosition()));
 					remapped.put(PeMetaBase.RIDER_LOCK, new DataWatcherObjectByte((byte) ((data.getRotationLock() != null) ? 1 : 0)));
 					if (data.getRotationLock() != null) {
-						remapped.put(PeMetaBase.RIDER_MAX_ROTATION, new DataWatcherObjectFloatLe(data.getRotationLock()));
-						remapped.put(PeMetaBase.RIDER_MIN_ROTATION, new DataWatcherObjectFloatLe(-data.getRotationLock()));
+						remapped.put(PeMetaBase.RIDER_MAX_ROTATION, new DataWatcherObjectFloatLe(-data.getRotationLock()));
+						remapped.put(PeMetaBase.RIDER_MIN_ROTATION, new DataWatcherObjectFloatLe(data.getRotationLock()));
 					}
 				} else {
 					entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_RIDING, false);
