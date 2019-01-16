@@ -20,19 +20,22 @@ public class EntityHeadRotation extends MiddleEntityHeadRotation {
 	@Override
 	public RecyclableCollection<ClientBoundPacketData> toData() {
 		NetworkEntity entity = cache.getWatchedEntityCache().getWatchedEntity(entityId);
-		if (entity != null) {
-			if (entity.getDataCache().isRiding()) {
-				NetworkEntity vehicle = cache.getWatchedEntityCache().getWatchedEntity(entity.getDataCache().getVehicleId());
-				if (vehicle != null && vehicle.getType() == NetworkEntityType.BOAT) {
-					headRot -= vehicle.getDataCache().getHeadRotation((byte) 0);
-				}
-			}
-			entity.getDataCache().setHeadRotation(headRot);
+		if (entity == null) {
+			return RecyclableEmptyList.get();
 		}
+		if (entity.getDataCache().isRiding()) {
+			NetworkEntity vehicle = cache.getWatchedEntityCache().getWatchedEntity(entity.getDataCache().getVehicleId());
+			if (vehicle != null && vehicle.getType() == NetworkEntityType.BOAT) {
+				headRot -= vehicle.getDataCache().getYaw();
+			}
+		}
+		//TODO: cows, pigs and some other entities dont use the sent head rotation, but some do. why?
+		//    i suspect RESET_ROTATION maybe has something to do with it.
+		entity.getDataCache().setHeadRotation(headRot);
 		if (entity.getType() == NetworkEntityType.PLAYER || entity.getType().isOfType(NetworkEntityType.ARROW)) {
 			//Players cannot be send with entitydelta, the entitytracker is modified to send extra teleport packet.
 			//Arrows have weird values from java server. Their updates will not be send also.
-			return RecyclableEmptyList.get();
+			return RecyclableSingletonList.create(SetPosition.createPitch(entity));
 		} else {
 			ClientBoundPacketData serializer = ClientBoundPacketData.create(PEPacketIDs.MOVE_ENTITY_DELTA);
 			VarNumberSerializer.writeVarLong(serializer, entityId);
