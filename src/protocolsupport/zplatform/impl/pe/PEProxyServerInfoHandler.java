@@ -29,6 +29,7 @@ import raknetserver.pipeline.raknet.RakNetPacketConnectionEstablishHandler.PingH
 public class PEProxyServerInfoHandler implements PingHandler {
 
 	private static final int statusThreads = Utils.getJavaPropertyValue("pestatusthreads", 2, Integer::parseInt);
+    public static final int TEST_PORT = 19132;
 	private static final int statusThreadKeepAlive = Utils.getJavaPropertyValue("pestatusthreadskeepalive", 60, Integer::parseInt);
 
 	static {

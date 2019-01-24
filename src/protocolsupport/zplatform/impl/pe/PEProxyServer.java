@@ -12,8 +12,7 @@ import raknetserver.RakNetServer.UserChannelInitializer;
 public class PEProxyServer {
 
 	private final RakNetServer peserver = new RakNetServer(
-		new InetSocketAddress(Bukkit.getIp().isEmpty() ? "0.0.0.0" : Bukkit.getIp(), PENetServerConstants.19132),
-		PENetServerConstants.PING_HANDLER,
+        new InetSocketAddress(Bukkit.getIp().isEmpty() ? "0.0.0.0": Bukkit.getIp(), PEProxyServerInfoHandler.TEST_PORT),
 		new PEProxyServerInfoHandler(),
 		new UserChannelInitializer() {
 			@Override
