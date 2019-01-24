@@ -30,7 +30,6 @@ public class PEProxyServerInfoHandler implements PingHandler {
 
 	private static final int statusThreads = Utils.getJavaPropertyValue("pestatusthreads", 2, Integer::parseInt);
 	private static final int statusThreadKeepAlive = Utils.getJavaPropertyValue("pestatusthreadskeepalive", 60, Integer::parseInt);
-	public static final int TEST_PORT = 2222;
 
 	static {
 		ProtocolSupport.logInfo(MessageFormat.format("PE status threads max count: {0}, keep alive time: {1}", statusThreads, statusThreadKeepAlive));
