@@ -64,6 +64,7 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 
 	protected int action;
 	protected Position blockPosition = new Position(0, 0, 0);
+	protected Position breakPosition = null
 	protected int face;
 
 	@Override
