@@ -63,9 +63,9 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 	}
 
 	protected int action;
-	protected Position blockPosition = new Position(0, 0, 0);
-	protected Position breakPosition = null
 	protected int face;
+	protected Position blockPosition = new Position(0, 0, 0);
+	protected Position breakPosition = null;
 
 	@Override
 	public void readFromClientData(ByteBuf clientdata) {
@@ -74,8 +74,6 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 		PositionSerializer.readPEPositionTo(clientdata, blockPosition);
 		face = VarNumberSerializer.readSVarInt(clientdata);
 	}
-
-	protected Position breakPosition = null;
 	
 	@Override
 	public RecyclableCollection<ServerBoundPacketData> toNative() {
