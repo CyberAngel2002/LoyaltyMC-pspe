@@ -63,7 +63,7 @@ public class InventoryOpen extends MiddleInventoryOpen {
 			}
 			//Normal inventory, requires fake blocks to open. First check if plugins (Hmmpf) have closed inventory.
 			if (invCache.getPreviousWindowId() != 0 && invCache.getPreviousWindowId() != windowId) {
-				packets.add(InventoryClose.create(version, invCache.getPreviousWindowId()));
+				packets.add(InventoryClose.create(invCache.getPreviousWindowId()));
 			}
 			Position open = PEFakeContainer.prepareContainer(title, connection, cache, packets);
 			//The fake blocks take some time, we schedule the opening be requesting a delay from the server.
