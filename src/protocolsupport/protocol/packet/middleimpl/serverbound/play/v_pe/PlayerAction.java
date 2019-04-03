@@ -132,8 +132,7 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 			case START_GLIDE: {
 				return RecyclableSingletonList.create(MiddleEntityAction.create(selfId, MiddleEntityAction.Action.START_ELYTRA_FLY, 0));
 			}
-					case DIMENSION_CHANGE_ACK
-			}
+			case DIMENSION_CHANGE_ACK:
 			default: {
 				return RecyclableEmptyList.get();
 			}
