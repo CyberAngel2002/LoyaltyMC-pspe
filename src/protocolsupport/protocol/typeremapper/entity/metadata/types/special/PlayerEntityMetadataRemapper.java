@@ -36,16 +36,13 @@ public class PlayerEntityMetadataRemapper extends LivingEntityMetadataRemapper {
 					if (nameTag != null) // If the nametag
 						remapped.put(PeMetaBase.NAMETAG, new DataWatcherObjectString(nameTag.toLegacyText()));
 					else
-						remapped.put(PeMetaBase.NAMETAG, null); // Remove old tag (set by the BaseEntityMetadataRemapper class)
+						remapped.put(PeMetaBase.NAMETAG, null);
 				}
 				if (hasNameTagPersistentMetaValue) {
-					entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_SHOW_NAMETAG, true); // ALWAYS show nametag if the meta value is set (no matter if it is true or false)
-					entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_ALWAYS_SHOW_NAMETAG, true);
 					remapped.put(PeMetaBase.ALWAYS_SHOW_NAMETAG, new DataWatcherObjectByte((byte) 1)); // 1 = always visible
-				} else { // If the name tag persistent meta value ISN'T SET, it means that the name tag should be hidden (Citizens does that to hide nameplates)
-					entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_SHOW_NAMETAG, false); // ALWAYS show nametag if the meta value is set (no matter if it is true or false)
-					entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_ALWAYS_SHOW_NAMETAG, false);
 				}
+				entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_SHOW_NAMETAG, hasNameTagPersistentMetaValue);
+				entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_ALWAYS_SHOW_NAMETAG, true);
 			}
 		}, ProtocolVersionsHelper.ALL_PE);
 
@@ -53,9 +50,9 @@ public class PlayerEntityMetadataRemapper extends LivingEntityMetadataRemapper {
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.ADDITIONAL_HEARTS, 10), ProtocolVersionsHelper.ALL_1_9);
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.ADDITIONAL_HEARTS, 17), ProtocolVersionsHelper.BEFORE_1_9);
 
-		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.SCORE, 12),  ProtocolVersionsHelper.RANGE__1_10__1_13_2);
-		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.SCORE, 11),  ProtocolVersionsHelper.ALL_1_9);
-		addRemap(new IndexValueRemapperNumberToInt(DataWatcherObjectIndex.Player.SCORE, 18),  ProtocolVersionsHelper.BEFORE_1_9);
+		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.SCORE, 12), ProtocolVersionsHelper.RANGE__1_10__1_13_2);
+		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.SCORE, 11), ProtocolVersionsHelper.ALL_1_9);
+		addRemap(new IndexValueRemapperNumberToInt(DataWatcherObjectIndex.Player.SCORE, 18), ProtocolVersionsHelper.BEFORE_1_9);
 
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.SKIN_FLAGS, 13), ProtocolVersionsHelper.RANGE__1_10__1_13_2);
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Player.SKIN_FLAGS, 12), ProtocolVersionsHelper.ALL_1_9);

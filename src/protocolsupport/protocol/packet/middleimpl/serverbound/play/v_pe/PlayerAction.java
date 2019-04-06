@@ -1,30 +1,28 @@
 package protocolsupport.protocol.packet.middleimpl.serverbound.play.v_pe;
 
-import java.util.concurrent.TimeUnit;
-
 import io.netty.buffer.ByteBuf;
+
 import protocolsupport.protocol.ConnectionImpl;
 import protocolsupport.protocol.packet.ServerBoundPacket;
 import protocolsupport.protocol.packet.middle.ServerBoundMiddlePacket;
 import protocolsupport.protocol.packet.middle.serverbound.play.MiddleBlockDig;
+import protocolsupport.protocol.packet.middle.serverbound.play.MiddleClientCommand;
 import protocolsupport.protocol.packet.middle.serverbound.play.MiddleEntityAction;
 import protocolsupport.protocol.packet.middle.serverbound.play.MiddleUseEntity;
 import protocolsupport.protocol.packet.middleimpl.ServerBoundPacketData;
+import protocolsupport.protocol.pipeline.version.v_pe.PEPacketDecoder;
 import protocolsupport.protocol.serializer.PositionSerializer;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
 import protocolsupport.protocol.utils.networkentity.NetworkEntity;
+import protocolsupport.protocol.typeremapper.pe.PEPacketIDs;
 import protocolsupport.protocol.utils.types.Position;
 import protocolsupport.protocol.utils.types.UsedHand;
 import protocolsupport.utils.recyclable.RecyclableCollection;
 import protocolsupport.utils.recyclable.RecyclableEmptyList;
 import protocolsupport.utils.recyclable.RecyclableSingletonList;
-import protocolsupport.zplatform.ServerPlatform;
-import protocolsupport.protocol.typeremapper.pe.PEPacketIDs;
-import protocolsupport.protocol.pipeline.version.v_pe.PEPacketDecoder;
-import protocolsupport.protocol.packet.middle.serverbound.play.MiddleClientCommand;
 
 public class PlayerAction extends ServerBoundMiddlePacket {
-	
+
 	public static final int START_BREAK = 0;
 	public static final int ABORT_BREAK = 1;
 	public static final int STOP_BREAK = 2;
@@ -49,7 +47,7 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 	public static final int STOP_SPIN_ATTACK = 24;
 
 	public static boolean isDimSwitchAck(ByteBuf data) {
-		if (PEPacketDecoder.sPeakPacketId(data) == PEPacketIDs.PLAYER_ACTION) {
+		if (PEPacketDecoder.sPeekPacketId(data) == PEPacketIDs.PLAYER_ACTION) {
 			final ByteBuf copy = data.duplicate();
 			PEPacketDecoder.sReadPacketId(copy);
 			VarNumberSerializer.readVarLong(copy); // entity id
@@ -74,7 +72,7 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 		PositionSerializer.readPEPositionTo(clientdata, blockPosition);
 		face = VarNumberSerializer.readSVarInt(clientdata);
 	}
-	
+
 	@Override
 	public RecyclableCollection<ServerBoundPacketData> toNative() {
 		int selfId = cache.getWatchedEntityCache().getSelfPlayerEntityId();
@@ -86,11 +84,11 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 				return RecyclableSingletonList.create(serializer);
 			}
 			case START_BREAK: {
-				NetworkEntity itemFrame = cache.getPETileCache().getItemFrameAt(blockPosition);
-				if (itemFrame != null) {
-					return RecyclableSingletonList.create(MiddleUseEntity.create(itemFrame.getId(),
-						MiddleUseEntity.Action.ATTACK, null, UsedHand.MAIN));
-				}
+				NetworkEntity itemFrame = cache.getPETileCache().getItemFrameAt(blockPosition);		
+ 				if (itemFrame != null) {		
+ 					return RecyclableSingletonList.create(MiddleUseEntity.create(itemFrame.getId(),		
+ 						MiddleUseEntity.Action.ATTACK, null, UsedHand.MAIN));		
+ 				}
 				breakPosition = blockPosition.clone();
 				return RecyclableSingletonList.create(MiddleBlockDig.create(MiddleBlockDig.Action.START_DIG, breakPosition, face));
 			}

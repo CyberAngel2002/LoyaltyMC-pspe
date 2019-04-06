@@ -37,6 +37,16 @@ public class AttributesCache {
 	}
 
 
+	protected float maxHealth = 20.0F;
+
+	public void setMaxHealth(float maxHealth) {
+		this.maxHealth = maxHealth;
+	}
+
+	public float getMaxHealth() {
+		return maxHealth;
+	}
+
 
 	protected UUID peClientUUID;
 
