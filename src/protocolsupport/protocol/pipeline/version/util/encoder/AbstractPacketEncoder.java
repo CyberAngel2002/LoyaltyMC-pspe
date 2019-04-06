@@ -9,11 +9,15 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
+import protocolsupport.ProtocolSupport;
 import protocolsupport.api.Connection;
 import protocolsupport.api.utils.NetworkState;
 import protocolsupport.protocol.ConnectionImpl;
 import protocolsupport.protocol.packet.middle.ClientBoundMiddlePacket;
 import protocolsupport.protocol.packet.middleimpl.ClientBoundPacketData;
+import protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe.EntityHeadRotation;
+import protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe.EntityTeleport;
+import protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe.EntityVelocity;
 import protocolsupport.protocol.serializer.MiscSerializer;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
 import protocolsupport.protocol.utils.registry.MiddlePacketRegistry;
@@ -38,6 +42,15 @@ public abstract class AbstractPacketEncoder extends MessageToMessageEncoder<Byte
 		NetworkState currentProtocol = connection.getNetworkState();
 		try {
 			ClientBoundMiddlePacket packetTransformer = registry.getTransformer(currentProtocol, VarNumberSerializer.readVarInt(input));
+			if (ProtocolSupport.isPacketDebugging()) {
+				if (packetTransformer.getClass() == EntityTeleport.class ||
+					packetTransformer.getClass() == EntityHeadRotation.class ||
+					packetTransformer.getClass() == EntityVelocity.class) {
+					// ignore TimeUpdate Noop
+				} else {
+					ProtocolSupport.logInfo(MessageFormat.format("PE_SEND: {0}", packetTransformer));
+				}
+			}
 			packetTransformer.readFromServerData(input);
 			if (input.isReadable()) {
 				throw new DecoderException("Did not read all data from packet, bytes left: " + input.readableBytes());

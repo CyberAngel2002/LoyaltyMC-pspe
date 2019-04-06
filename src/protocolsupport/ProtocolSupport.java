@@ -42,6 +42,13 @@ public class ProtocolSupport extends JavaPlugin {
 
 	private PEProxyServer peserver;
 
+	// Set to true to enable detailed packet debugging
+	private boolean packetDebugging = false;
+
+	public static boolean isPacketDebugging() {
+		return getInstance().packetDebugging;
+	}
+
 	@Override
 	public void onLoad() {
 		try {

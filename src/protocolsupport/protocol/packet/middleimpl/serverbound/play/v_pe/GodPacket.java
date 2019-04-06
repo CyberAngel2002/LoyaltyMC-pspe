@@ -60,6 +60,7 @@ public class GodPacket extends ServerBoundMiddlePacket {
 				break;
 			}
 			case ACTION_USE_ENTITY: {
+				// The player has used the entity in front of him
 				simpleActionMiddlePacket = useEntityMiddlePacket;
 				break;
 			}

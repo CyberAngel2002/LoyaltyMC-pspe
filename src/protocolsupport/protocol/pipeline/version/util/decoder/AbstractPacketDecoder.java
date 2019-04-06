@@ -9,6 +9,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import protocolsupport.ProtocolSupport;
 import protocolsupport.protocol.ConnectionImpl;
 import protocolsupport.protocol.packet.middle.ServerBoundMiddlePacket;
 import protocolsupport.protocol.packet.middleimpl.ServerBoundPacketData;
@@ -32,6 +33,10 @@ public abstract class AbstractPacketDecoder extends MessageToMessageDecoder<Byte
 
 	protected void decodeAndTransform(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> to) {
 		ServerBoundMiddlePacket packetTransformer = registry.getTransformer(connection.getNetworkState(), readPacketId(buffer));
+		if (ProtocolSupport.isPacketDebugging()) {
+			ProtocolSupport.logInfo(MessageFormat.format("PE_RECV: {0}", packetTransformer));
+		}
+
 		packetTransformer.readFromClientData(buffer);
 		try (RecyclableCollection<ServerBoundPacketData> data = processPackets(ctx.channel(), packetTransformer.toNative())) {
 			for (ServerBoundPacketData packetdata : data) {

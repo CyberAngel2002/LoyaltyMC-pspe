@@ -1,6 +1,7 @@
 package protocolsupport.protocol.packet.middleimpl.serverbound.play.v_pe;
 
 import io.netty.buffer.ByteBuf;
+import protocolsupport.ProtocolSupport;
 import protocolsupport.listeners.InternalPluginMessageRequest;
 import protocolsupport.listeners.internal.BlockUpdateRequest;
 import protocolsupport.protocol.ConnectionImpl;
@@ -21,6 +22,8 @@ import protocolsupport.protocol.utils.types.Position;
 import protocolsupport.protocol.utils.types.UsedHand;
 import protocolsupport.utils.recyclable.RecyclableArrayList;
 import protocolsupport.utils.recyclable.RecyclableCollection;
+
+import java.text.MessageFormat;
 
 public class UseItem extends ServerBoundMiddlePacket {
 
@@ -60,6 +63,7 @@ public class UseItem extends ServerBoundMiddlePacket {
 		RecyclableArrayList<ServerBoundPacketData> packets = RecyclableArrayList.create();
 		switch (subTypeId) {
 			case USE_CLICK_AIR: {
+				// The player wants to place a block
 				face = -1;
 				packets.add(MiddleBlockPlace.create(position, face, UsedHand.MAIN, cX, cY, cZ));
 				break;
@@ -83,6 +87,9 @@ public class UseItem extends ServerBoundMiddlePacket {
 					packets.add(MiddleBlockDig.create(MiddleBlockDig.Action.FINISH_DIG, position, 0));
 				}
 				break;
+			}
+			default: {
+				ProtocolSupport.logInfo(MessageFormat.format("UNHANDLED PE UTEITEM SUBTYPE: {0}", subTypeId));
 			}
 		}
 		//Whenever the player places or breaks a block far away we want the server to update it, because PE might not be allowed to do it.

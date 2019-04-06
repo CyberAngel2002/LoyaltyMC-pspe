@@ -70,6 +70,7 @@ public class PESlotRemapper {
 				}
 			}
 			case ENCHANT: {
+				System.out.println("remapping enchant, slot: " + slot);
 				if (slot == 0) {
 					invCache.getFakeEnchanting().setInputOutputStack(item);
 					return invCache.getFakeEnchanting().updateInventory(cache, version);
@@ -77,6 +78,7 @@ public class PESlotRemapper {
 					invCache.getFakeEnchanting().setLapisStack(item);
 					return invCache.getFakeEnchanting().updateInventory(cache, version);
 				} else {
+					System.out.println("creating result");
 					return InventorySetSlot.create(version, locale, PESource.POCKET_INVENTORY, slot >= 29 ? slot - 29 : slot + 7, item);
 				}
 			}

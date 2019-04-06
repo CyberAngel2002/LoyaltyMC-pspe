@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -15,19 +16,29 @@ public class Utils {
 
 	public static final Gson GSON = new Gson();
 
-	public static String toStringAllFields(Object obj) {
+	public static String toStringAllFields(Object obj, List<String> exceptions) {
 		StringJoiner joiner = new StringJoiner(", ");
 		Class<?> clazz = obj.getClass();
 		do {
 			try {
 				for (Field field : clazz.getDeclaredFields()) {
-					if (!Modifier.isStatic(field.getModifiers())) {
-						ReflectionUtils.setAccessible(field);
-						Object value = field.get(obj);
-						if ((value == null) || !value.getClass().isArray()) {
-							joiner.add(field.getName() + ": " + Objects.toString(value));
-						} else {
-							joiner.add(field.getName() + ": " + Arrays.deepToString(new Object[] {value}));
+					// Skip fields in exception list
+					if (!exceptions.contains(field.getName())) {
+						if (!Modifier.isStatic(field.getModifiers())) {
+							ReflectionUtils.setAccessible(field);
+							Object value = field.get(obj);
+							String valueStr;
+							if ((value == null) || !value.getClass().isArray()) {
+								valueStr = Objects.toString(value);
+							} else {
+								valueStr = "x" + Arrays.deepToString(new Object[]{value}) + "X";
+							}
+							// Shorten too long fields (especially nested)
+							if (valueStr.length() < 50) {
+								joiner.add(field.getName() + ": " + valueStr);
+							} else {
+								joiner.add(field.getName() + ": " + valueStr.substring(0, 50) + "...>");
+							}
 						}
 					}
 				}
@@ -35,7 +46,11 @@ public class Utils {
 				throw new RuntimeException("Unable to get object fields values", e);
 			}
 		} while ((clazz = clazz.getSuperclass()) != null);
-		return obj.getClass().getName() + "(" + joiner.toString() + ")";
+		return obj.getClass().getSimpleName() + "(" + joiner.toString() + ")";
+	}
+
+	public static String toStringAllFields(Object obj) {
+		return toStringAllFields(obj, Collections.emptyList());
 	}
 
 	public static <T> T getFromArrayOrNull(T[] array, int index) {

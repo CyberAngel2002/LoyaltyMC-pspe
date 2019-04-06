@@ -52,6 +52,7 @@ public class PEFakeEnchanting {
 	}
 
 	public NetworkItemStack[] compileInventory() {
+		System.out.println("compile Inventory");
 		NetworkItemStack[] contents = new NetworkItemStack[5];
 		contents[0] = inputOutputSlot;
 		contents[1] = lapisSlot;
@@ -104,6 +105,7 @@ public class PEFakeEnchanting {
 		} else if (transaction.getSlot() == 1 && (transaction.getNewItem().isNull() || MaterialAPI.getItemByNetworkId(transaction.getNewItem().getTypeId()) == Material.INK_SAC)) {
 			setLapisStack(transaction.getNewItem());
 		} else if ((transaction.getSlot() > 1 && transaction.getSlot() <= 4) && (transaction.getInventoryId() != PESource.POCKET_INVENTORY)) {
+			System.out.println("Am trying to enchant now! chosen_ " + (transaction.getSlot() - 2));
 			//If and only if on of the three fake hopper option slots are clicked proceed with the enchanting.
 			packets.add(MiddleInventoryEnchant.create(cache.getWindowCache().getOpenedWindowId(), transaction.getSlot() - 2));
 			//Stop caching inventory transaction (not necessary when we enchant!)

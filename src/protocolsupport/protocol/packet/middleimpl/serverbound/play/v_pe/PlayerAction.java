@@ -131,6 +131,7 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 			}
 			case DIMENSION_CHANGE_ACK:
 			default: {
+				ProtocolSupport.logInfo(MessageFormat.format("UNHANDLED PE ACTION: {0}", action));
 				return RecyclableEmptyList.get();
 			}
 		}
