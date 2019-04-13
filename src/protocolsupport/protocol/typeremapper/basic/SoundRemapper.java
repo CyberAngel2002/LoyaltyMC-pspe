@@ -138,7 +138,8 @@ public class SoundRemapper {
 			registerRemapEntry("entity.bat.takeoff", "mob.bat.takeoff", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.villager.no", "mob.villager.no", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.zombie.attack_iron_door", "mob.zombie.metal", ProtocolVersionsHelper.BEFORE_1_9);
-			registerRemapEntry("entity.villager.trading", "mob.villager.haggle", ProtocolVersionsHelper.BEFORE_1_9);
+			registerRemapEntry("entity.villager.trade", "mob.villager.haggle", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
+			registerRemapEntry("entity.villager.trading", "mob.villager.haggle", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("item.firecharge.use", "mob.ghast.fireball", ProtocolVersionsHelper.BEFORE_1_9);
 			registerRemapEntry("entity.ghast.shoot", "mob.ghast.fireball", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.blaze.shoot", "mob.ghast.fireball", ProtocolVersionsHelper.BEFORE_1_9);
@@ -405,7 +406,7 @@ public class SoundRemapper {
 			registerRemapEntry("entity.fishing_bobber.splash", "entity.bobber.splash", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
 			registerRemapEntry("entity.fishing_bobber.throw", "random.bow", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.fishing_bobber.throw", "entity.bobber.throw", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
-			registerRemapEntry("entity.enderdragon.ambient", "mob.enderdragon.growl", ProtocolVersionsHelper.BEFORE_1_9);
+			registerRemapEntry("entity.enderdragon.ambient", "mob.enderdragon.growl", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.ender_dragon.ambient", "entity.enderdragon.ambient", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
 			registerRemapEntry("entity.ender_dragon.death", "mob.enderdragon.end", ProtocolVersionsHelper.BEFORE_1_9);
 			registerRemapEntry("entity.ender_dragon.death", "entity.enderdragon.death", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
@@ -418,7 +419,7 @@ public class SoundRemapper {
 			registerRemapEntry("entity.ender_dragon.shoot", "mob.ghast.fireball", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.ender_dragon.shoot", "item.fireCharge.use", ProtocolVersionsHelper.BEFORE_1_9);
 			registerRemapEntry("entity.ender_dragon.shoot", "entity.enderdragon.shoot", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
-			registerRemapEntry("entity.ender_dragon.explode", "random.explode", ProtocolVersionsHelper.BEFORE_1_9);
+			registerRemapEntry("entity.ender_dragon.explode", "random.explode", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.dragon_fireball.explode", "entity.enderdragon_fireball.explode", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
 			registerRemapEntry("entity.ender_eye.death", "entity.endereye.death", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
 			registerRemapEntry("entity.ender_eye.launch", "random.bow", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
@@ -484,9 +485,9 @@ public class SoundRemapper {
 			registerRemapEntry("entity.leash_knot.place", "entity.leashknot.place", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
 			registerRemapEntry("entity.lightning.impact", "random.explode", ProtocolVersionsHelper.BEFORE_1_9);
 			registerRemapEntry("entity.lightning_bolt.impact", "entity.lightning.impact", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
-			registerRemapEntry("entity.lightning.thunder", "ambient.weather.thunder", ProtocolVersionsHelper.BEFORE_1_9);
+			registerRemapEntry("entity.lightning.thunder", "ambient.weather.thunder", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.lightning_bolt.thunder", "entity.lightning.thunder", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
-			registerRemapEntry("entity.lingeringpotion.throw", "random.bow", ProtocolVersionsHelper.BEFORE_1_9);
+			registerRemapEntry("entity.lingeringpotion.throw", "random.bow", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.lingering_potion.throw", "entity.lingeringpotion.throw", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
 			registerRemapEntry("entity.magma_cube.death", "mob.slime.big", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.magma_cube.death", "entity.magmacube.death", ProtocolVersionsHelper.RANGE__1_9__1_12_2);
