@@ -57,8 +57,8 @@ public class InventoryData extends MiddleInventoryData {
 					invCache.getFakeEnchanting().updateOptionEnch(type - 4, value);
 				} else if (type <= 9) { //(7-9) EnchantmentLvl per option
 					invCache.getFakeEnchanting().updateOptionLevel(type - 7, value);
-				} else {
-					System.out.println("unhandled ENCHANT type: " + type);
+			//	} else {
+				//	System.out.println("unhandled ENCHANT type: " + type);
 				}
 				break;
 			}
