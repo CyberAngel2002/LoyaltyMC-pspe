@@ -1,4 +1,4 @@
-ProtocolSupport
+LoyaltyMC-pspe
 ===============
 
 ### warning this is a bleeding edge source and optimsed for my server
