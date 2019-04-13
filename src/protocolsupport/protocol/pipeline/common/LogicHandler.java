@@ -56,6 +56,9 @@ public class LogicHandler extends MessageToMessageCodec<Object, Object> {
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable e) throws Exception {
+		Throwable cause = e.getCause();
+		System.out.println("ERROR IN PS. MOST LIKELY ROOT CAUSE:");
+		cause.printStackTrace();
 		if (ServerPlatform.get().getMiscUtils().isDebugging() && !ignoreExceptions.contains(e.getClass())) {
 			super.exceptionCaught(ctx, new NetworkException(e, connection));
 		} else {
@@ -68,7 +71,7 @@ public class LogicHandler extends MessageToMessageCodec<Object, Object> {
 
 		public NetworkException(Throwable original, ConnectionImpl connection) {
 			super(MessageFormat.format(
-				"ProtocolSupport(buildinfo: {0}): Network exception occured(connection: {1})",
+				"SERVER ERROR: ProtocolSupport(buildinfo: {0}): Network exception occured(connection: {1})",
 				ProtocolSupport.getInstance().getBuildInfo(),
 				connection
 			), original);

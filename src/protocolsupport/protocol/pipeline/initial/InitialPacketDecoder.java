@@ -245,7 +245,7 @@ public class InitialPacketDecoder extends SimpleChannelInboundHandler<ByteBuf> {
 				break;
 			}
 			case PEProxyServerInfoHandler.PACKET_ID: {
-				setProtocol(channel, ProtocolVersionsHelper.LATEST_PE);
+				setProtocol(channel, ProtocolVersion.MINECRAFT_PE_LEGACY);
 				break;
 			}
 			default: {

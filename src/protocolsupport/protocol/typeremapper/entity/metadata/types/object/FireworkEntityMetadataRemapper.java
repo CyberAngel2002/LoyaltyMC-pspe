@@ -11,6 +11,10 @@ public class FireworkEntityMetadataRemapper extends BaseEntityMetadataRemapper {
 	public FireworkEntityMetadataRemapper() {
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Firework.ITEM, PeMetaBase.FIREWORK_TYPE), ProtocolVersionsHelper.ALL_PE);
 
+		// Unfortunately, does not really help :(
+//		addRemap(new FirstDataWatcherUpdateObjectAddRemapper(PeMetaBase.MINECART_OFFSET, new DataWatcherObjectVarInt(1)), ProtocolVersionsHelper.ALL_PE);
+//		addRemap(new FirstDataWatcherUpdateObjectAddRemapper(PeMetaBase.MINECART_DISPLAY, new DataWatcherObjectByte((byte) 1)), ProtocolVersionsHelper.ALL_PE);
+
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Firework.ITEM, 6), ProtocolVersionsHelper.RANGE__1_10__1_13_2);
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Firework.ITEM, 5), ProtocolVersionsHelper.ALL_1_9);
 		addRemap(new IndexValueRemapperNoOp(DataWatcherObjectIndex.Firework.ITEM, 8), ProtocolVersionsHelper.BEFORE_1_9);
