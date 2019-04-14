@@ -99,7 +99,7 @@ repositories {
 dependencies {
 	shadow ":spigot-1.13.2-3"
 	compile ":spigot-1.13.2-3"
-	compile ":raknetserver-30"
+	compile ":raknetserver-31"
 	compile ":udpserver-11"
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
 	compile group: 'it.unimi.dsi', name: 'fastutil', version: '8.2.2'
