@@ -60,7 +60,7 @@ public class PEPacketIDs {
 	public static final int TILE_DATA_UPDATE = 56;
 	public static final int PLAYER_STEER = 57;
 	public static final int CHUNK_DATA = 58;
-	//public static final int SET_COMMANDS_ENABLED = 59;
+	public static final int SET_COMMANDS_ENABLED = 59;
 	public static final int SET_DIFFICULTY = 60;
 	public static final int CHANGE_DIMENSION = 61;
 	public static final int CHANGE_PLAYER_GAMETYPE = 62;
