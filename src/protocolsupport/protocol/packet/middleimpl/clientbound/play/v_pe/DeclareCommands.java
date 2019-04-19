@@ -61,23 +61,19 @@ public class DeclareCommands extends MiddleDeclareCommands {
 	public static final int ARG_TYPE_COMMAND = 44;
 
 	public static final int ARG_FLAG_VALID = 0x100000;
-	public static final int ARG_FLAG_ENUM = 0x200000;
+	public static final int ARG_FLAG_LITERAL = 0x200000;
 
 	private CommandNode[] allNodes;
+	private CommandNode[] topLevelNodes; // A subset of allNodes containing the starting "command" nodes
 	private int rootNodeIndex;
-	private CommandNode[] topLevelNodes;
 
-	public DeclareCommands(ConnectionImpl connection) {
-		super(connection);
-	}
-
-	public static class CommandNode {
-		private String name;
-		private String argType;
-		private String suggestion;
-		private int[] children;
-		private int redirect;
-		private boolean isPathEnd;
+	private static class CommandNode {
+		private final String name;
+		private final String argType;
+		private final String suggestion;
+		private final int[] children;
+		private final int redirect;
+		private final boolean isPathEnd;
 
 		public CommandNode(String name, String argType, String suggestion, int[] children, int redirect, boolean isPathEnd) {
 			this.name = name;
@@ -94,41 +90,103 @@ public class DeclareCommands extends MiddleDeclareCommands {
 		}
 
 		public boolean isLeaf() {
-			return this.children.length == 0;
+			return this.getChildren().length == 0;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getArgType() {
+			return argType;
+		}
+
+		public int[] getChildren() {
+			return children;
 		}
 	}
 
-	public static class PECommandNode {
-		private String name;
-		private String argType;
-		private int nameIndex;
+	private static class PEArgumentNode {
+		private final String name;
+		private final String argType;
+		private final int nameIndex;
 
-		public PECommandNode(String name, String argType, Map<String, Integer> enumIndex) {
-			this.name = name;
-			this.argType = argType;
+		public PEArgumentNode(CommandNode node, PECommandsStructure peStruct) {
+			this.name = node.getName();
+			this.argType = node.getArgType();
 
-			// Cache enum index
-			Integer enumPos = enumIndex.get(name);
-			int index;
-			if (enumPos == null) {
-				index = enumIndex.size();
-				enumIndex.put(name, index);
+			// Cache literal index, if this is a literal argument
+			if (this.argType == null) {
+				this.nameIndex = peStruct.registerLiteral(this.name);
 			} else {
-				index = enumPos;
+				this.nameIndex = -1;
+			}
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getArgType() {
+			return argType;
+		}
+
+		public int getNameIndex() {
+			return nameIndex;
+		}
+	}
+
+	private static class PECommandsStructure {
+		private Map<CommandNode, List<List<PEArgumentNode>>> overloadsRegistry = new HashMap<>();
+		private Map<String, Integer> literalRegistry = new HashMap<>();
+		private String[] literalArray;
+
+		/**
+		 * Register a list of overloads for a top-level node.
+		 */
+		public void registerOverloads(CommandNode node, List<List<PEArgumentNode>> overloads) {
+			overloadsRegistry.put(node, overloads);
+		}
+
+		public List<List<PEArgumentNode>> getOverloads(CommandNode node) {
+			return overloadsRegistry.get(node);
+		}
+
+		/**
+		 * Register a literal in the internal literal array if it was new, and return it's index value.
+		 */
+		public int registerLiteral(String literal) {
+			if (literalArray != null) {
+				throw new IllegalStateException("Cannot register literals after getLiteralArray() is called");
 			}
 
-			this.nameIndex = index;
+			Integer index = literalRegistry.get(literal);
+			if (index == null) {
+				index = literalRegistry.size();
+				literalRegistry.put(literal, index);
+			}
+			return index;
+		}
+
+		/**
+		 * Return an array of all registered literals. All strings in the array are unique.
+		 */
+		public String[] getLiteralArray() {
+			// Not thread safe...
+			if (literalArray == null) {
+				// Convert literalRegistry to proper array using assigned indices
+				literalArray = new String[literalRegistry.size()];
+				for (Map.Entry<String, Integer> entry : literalRegistry.entrySet()) {
+					literalArray[entry.getValue()] = entry.getKey();
+				}
+			}
+
+			return literalArray;
 		}
 	}
 
-	public static class PECommandsStructure {
-		private String[] enumArray;
-		private Map<CommandNode, List<List<PECommandNode>>> allOverloads;
-
-		public PECommandsStructure(String[] enumArray, Map<CommandNode, List<List<PECommandNode>>> allOverloads) {
-			this.enumArray = enumArray;
-			this.allOverloads = allOverloads;
-		}
+	public DeclareCommands(ConnectionImpl connection) {
+		super(connection);
 	}
 
 	@Override
@@ -147,10 +205,10 @@ public class DeclareCommands extends MiddleDeclareCommands {
 
 		// For convenience, store all top-level nodes in a separate array. (These correspond to the
 		// actual "commands", i.e. the first literal, like "weather").
-		int numTopLevelNodes = allNodes[rootNodeIndex].children.length;
+		int[] topLevelNodeIndices = allNodes[rootNodeIndex].getChildren();
 		int i = 0;
-		topLevelNodes = new CommandNode[numTopLevelNodes];
-		for (int index :  allNodes[rootNodeIndex].children) {
+		topLevelNodes = new CommandNode[topLevelNodeIndices.length];
+		for (int index : topLevelNodeIndices) {
 			topLevelNodes[i++] = allNodes[index];
 		}
 	}
@@ -241,119 +299,81 @@ public class DeclareCommands extends MiddleDeclareCommands {
 		return argType;
 	}
 
-	private int getPeVariableCode(String pcVariableName) {
+	@Override
+	public RecyclableCollection<ClientBoundPacketData> toData() {
+		PECommandsStructure struct = buildPEStructure();
 
-		if (pcVariableName.equals("brigadier:bool")) {
-			return ARG_TYPE_STRING;
-		} else if (pcVariableName.equals("brigadier:float")) {
-			return ARG_TYPE_FLOAT;
-		} else if (pcVariableName.equals("brigadier:double")) {
-			return ARG_TYPE_FLOAT;
-		} else if (pcVariableName.equals("brigadier:integer")) {
-			return ARG_TYPE_INT;
-		} else if (pcVariableName.equals("brigadier:string")) {
-			return ARG_TYPE_STRING;
-		} else if (pcVariableName.equals("minecraft:int_range")) {
-			return ARG_TYPE_INT;
-		} else if (pcVariableName.equals("minecraft:float_range")) {
-			return ARG_TYPE_FLOAT;
-		} else if (pcVariableName.equals("minecraft:vec3")) {
-			return ARG_TYPE_POSITION;
-		} else if (pcVariableName.equals("minecraft:entity")) {
-			return ARG_TYPE_TARGET;
-		} else if (pcVariableName.equals("minecraft:message")) {
-			return ARG_TYPE_MESSAGE;
-		} else {
-			// We have a specialized type in PC which has no correspondance in PE. Sucks!
-			// Tried ARG_TYPE_RAWTEXT before, but that "swallows" everything to the end of the line
-			return ARG_TYPE_STRING;
-		}
-	}
-
-	private void walkNode(List<List<PECommandNode>> overloads, Map<String, Integer> enumIndex, CommandNode currentNode, List<CommandNode> previousNodes) {
-		if (currentNode.isLeaf()) {
-			List<PECommandNode> newOverload = new ArrayList<>();
-			for (CommandNode node : previousNodes) {
-				PECommandNode peNode = new PECommandNode(node.name, node.argType, enumIndex);
-				newOverload.add(peNode);
-			}
-			overloads.add(newOverload);
-		} else {
-			for (int i = 0; i < currentNode.children.length; i++) {
-				int childNodeIndex = currentNode.children[i];
-				CommandNode childNode = allNodes[childNodeIndex];
-				List<CommandNode> nodes = new ArrayList<>(previousNodes);
-				nodes.add(childNode);
-				walkNode(overloads, enumIndex, childNode, nodes);
-			}
-		}
+		return RecyclableSingletonList.create(create(struct));
 	}
 
 	private PECommandsStructure buildPEStructure() {
-		// Collect mapping of enum string values to integers in enumIndex
-		Map<String, Integer> enumIndex = new HashMap<>();
-		String[] enumArray;
-		Map<CommandNode, List<List<PECommandNode>>> allOverloads;
+		PECommandsStructure peStruct = new PECommandsStructure();
 
-		allOverloads = new HashMap<>(topLevelNodes.length);
+		// For every command, we need to create a set of overloads, i.e. the different
+		// ways the command can be called, with a list of argument nodes for each alternative.
 		for (CommandNode node : topLevelNodes) {
-			List<List<PECommandNode>> overloads = new ArrayList<>();
-			// HashSet<ArrayList<String>>();
-			walkNode(overloads, enumIndex, node, new ArrayList<>());
-			allOverloads.put(node, overloads);
+			List<List<PEArgumentNode>> overloads = new ArrayList<>();
+			walkNode(peStruct, overloads, node, new ArrayList<>());
+			peStruct.registerOverloads(node, overloads);
 		}
 
-		// Convert enumIndex to proper array per index
-		enumArray = new String[enumIndex.size()];
-		for (Map.Entry<String, Integer> entry : enumIndex.entrySet()) {
-			enumArray[entry.getValue()] = entry.getKey();
-		}
-
-		return new PECommandsStructure(enumArray, allOverloads);
+		return peStruct;
 	}
 
-	public ClientBoundPacketData create(PECommandsStructure struct) {
+	private void walkNode(PECommandsStructure peStruct, List<List<PEArgumentNode>> overloads, CommandNode currentNode, List<CommandNode> nodePath) {
+		if (currentNode.isLeaf()) {
+			List<PEArgumentNode> argumentList = new ArrayList<>();
+			for (CommandNode node : nodePath) {
+				PEArgumentNode peNode = new PEArgumentNode(node, peStruct);
+				argumentList.add(peNode);
+			}
+			overloads.add(argumentList);
+		} else {
+			for (int childNodeIndex : currentNode.getChildren()) {
+				CommandNode childNode = allNodes[childNodeIndex];
+				List<CommandNode> newPath = new ArrayList<>(nodePath);
+				newPath.add(childNode);
+				walkNode(peStruct, overloads, childNode, newPath);
+			}
+		}
+	}
+
+	public ClientBoundPacketData create(PECommandsStructure peStruct) {
 		ClientBoundPacketData serializer = ClientBoundPacketData.create(PEPacketIDs.AVAILABLE_COMMANDS);
 
-		// Write enumValues, a way to number strings
-		// First size
-		VarNumberSerializer.writeVarInt(serializer, struct.enumArray.length);
-		// then one string per index
-		for (String s : struct.enumArray) {
-			StringSerializer.writeVarIntUTF8String(serializer, s);
-		}
+		// Write all literals (a way to number strings)
+		writeLiterals(serializer, peStruct.getLiteralArray());
 
 		// Write "postfixes". Start with the count. We don't have any, so ignore the structure.
 		VarNumberSerializer.writeVarInt(serializer, 0);
 
-		// Write cmdEnums, a way to group the enumValues that can be refered to from
-		// aliases, or from parameter types.
-		// We have a 1-to-1 match between enums and enumGroups.
-		writeEnumGroups(serializer, struct.enumArray);
+		// Write literal groups, a way to group the literals that can be referred to from
+		// argument nodes.
+		// We have a 1-to-1 match between literals and literal groups.
+		writeLiteralGroups(serializer, peStruct.getLiteralArray());
 
 		// Now process the actual commands. Write on per top-level ("command") node.
 		VarNumberSerializer.writeVarInt(serializer, topLevelNodes.length);
 		for (CommandNode node : topLevelNodes) {
-			StringSerializer.writeVarIntUTF8String(serializer, node.name);
+			StringSerializer.writeVarIntUTF8String(serializer, node.getName());
 			// PC does not have any description, so just send an empty string
 			StringSerializer.writeVarIntUTF8String(serializer, "");
 			serializer.writeByte(0); // Flags? Always 0.
 			serializer.writeByte(0);  // Permissions? Always 0.
 
-			// Enum index for our alias list, or -1 if none.
+			// The literal group index that contain our alias list, or -1 if none.
 			serializer.writeIntLE(-1);
 
 			// Write out all "overloads", i.e. all different ways to call this command with arguments.
-			List<List<PECommandNode>> overloads = struct.allOverloads.get(node);
+			List<List<PEArgumentNode>> overloads = peStruct.getOverloads(node);
 
 			// First write number of overloads for this command
 			VarNumberSerializer.writeVarInt(serializer, overloads.size());
-
-			for (List<PECommandNode> overload : overloads) {
+			for (List<PEArgumentNode> overload : overloads) {
 				// For each overload, write out all arguments in order
 				VarNumberSerializer.writeVarInt(serializer, overload.size());
-				for (PECommandNode peNode : overload) {
-					writePeNode(serializer, peNode);
+				for (PEArgumentNode argumentNode : overload) {
+					writeArgumentNode(serializer, argumentNode);
 				}
 			}
 		}
@@ -364,45 +384,32 @@ public class DeclareCommands extends MiddleDeclareCommands {
 		return serializer;
 	}
 
-	private void writePeNode(ClientBoundPacketData serializer, PECommandNode peNode) {
-		int flag;
-		if (peNode.argType != null) {
-			// This is a variable; write the name and it's type
-			StringSerializer.writeVarIntUTF8String(serializer, peNode.name);
-			flag = getPeVariableCode(peNode.argType) | ARG_FLAG_VALID;
-		} else {
-			// This is a literal; write the corresponding enum constant.
-
-			// The literal arguments also has a "name", but it's not used, so leave it empty.
-			// (The actual value shown in the GUI is from the enum group)
-			StringSerializer.writeVarIntUTF8String(serializer, "");
-
-			// In theory, this is the index into the enumGroups, but we have the same index
-			// to our single enum so we can use that without conversion.
-			int index = peNode.nameIndex;
-			flag = index | ARG_FLAG_VALID | ARG_FLAG_ENUM;
+	private void writeLiterals(ClientBoundPacketData serializer, String[] literals) {
+		// First write the size
+		VarNumberSerializer.writeVarInt(serializer, literals.length);
+		// Then one string per index
+		for (String s : literals) {
+			StringSerializer.writeVarIntUTF8String(serializer, s);
 		}
-
-		// The "flag" design is really... odd. Bedrock Edition engineers. Don't ask.
-		serializer.writeIntLE(flag);
-		serializer.writeByte(0); // Boolean IS_OPTIONAL (1 = true). For now, call everything compulsory.
-		serializer.writeByte(0); // Flags? Always 0.
 	}
 
-	private void writeEnumGroups(ClientBoundPacketData serializer, String[] enumArray) {
-		// First size
-		VarNumberSerializer.writeVarInt(serializer, enumArray.length);
-		for (int i = 0; i < enumArray.length; i++) {
-			// Enum groups have a "name". It is never used, but needs to be unique.
+	private void writeLiteralGroups(ClientBoundPacketData serializer, String[] literals) {
+		// We create a literal group with a single member per literal, ordered so each group has
+		// has the same index as the corresponding literal.
+
+		// First write number of literal groups
+		VarNumberSerializer.writeVarInt(serializer, literals.length);
+		for (int i = 0; i < literals.length; i++) {
+			// Literal groups have a "name". It is never used, but needs to be unique.
 			StringSerializer.writeVarIntUTF8String(serializer, "e" + i);
-			// Number of enums in group, always just 1.
+			// Number of literals in group, always just 1.
 			VarNumberSerializer.writeVarInt(serializer, 1);
-			// Serialize enum index by using minimal data type
-			writeSingleEnum(serializer, i, enumArray.length);
+			writeSingleLiteral(serializer, i, literals.length);
 		}
 	}
 
-	private void writeSingleEnum(ClientBoundPacketData serializer, int value, int maxValue) {
+	private void writeSingleLiteral(ClientBoundPacketData serializer, int value, int maxValue) {
+		// Serialize literal index by using minimal data type
 		if (maxValue < 256) {
 			serializer.writeByte(value);
 		} else if (maxValue < 65536) {
@@ -412,70 +419,57 @@ public class DeclareCommands extends MiddleDeclareCommands {
 		}
 	}
 
-	@Override
-	public RecyclableCollection<ClientBoundPacketData> toData() {
-		PECommandsStructure struct = buildPEStructure();
+	private void writeArgumentNode(ClientBoundPacketData serializer, PEArgumentNode argumentNode) {
+		int flag;
 
-		return RecyclableSingletonList.create(create(struct));
+		if (argumentNode.getArgType() != null) {
+			// This is a variable; write the name and it's type
+			StringSerializer.writeVarIntUTF8String(serializer, argumentNode.getName());
+			flag = getPEArgTypeCode(argumentNode.getArgType()) | ARG_FLAG_VALID;
+		} else {
+			// This is a literal argument
+
+			// The literal arguments also has a "name", but it's not used, so leave it empty.
+			// (The actual value shown in the GUI is from the literal group)
+			StringSerializer.writeVarIntUTF8String(serializer, "");
+
+			// In theory, this is the index of a literal group, but we have the same index
+			// in our literal array so we can use that without conversion.
+			int index = argumentNode.getNameIndex();
+			flag = index | ARG_FLAG_VALID | ARG_FLAG_LITERAL;
+		}
+
+		// The "flag" design is really... odd. Bedrock Edition engineers. Don't ask.
+		serializer.writeIntLE(flag);
+		serializer.writeByte(0); // Boolean IS_OPTIONAL (1 = true). For now, call everything compulsory.
+		serializer.writeByte(0); // Flags? Always 0.
+	}
+
+	private int getPEArgTypeCode(String pcArgType) {
+		if (pcArgType.equals("brigadier:bool")) {
+			return ARG_TYPE_STRING;
+		} else if (pcArgType.equals("brigadier:float")) {
+			return ARG_TYPE_FLOAT;
+		} else if (pcArgType.equals("brigadier:double")) {
+			return ARG_TYPE_FLOAT;
+		} else if (pcArgType.equals("brigadier:integer")) {
+			return ARG_TYPE_INT;
+		} else if (pcArgType.equals("brigadier:string")) {
+			return ARG_TYPE_STRING;
+		} else if (pcArgType.equals("minecraft:int_range")) {
+			return ARG_TYPE_INT;
+		} else if (pcArgType.equals("minecraft:float_range")) {
+			return ARG_TYPE_FLOAT;
+		} else if (pcArgType.equals("minecraft:vec3")) {
+			return ARG_TYPE_POSITION;
+		} else if (pcArgType.equals("minecraft:entity")) {
+			return ARG_TYPE_TARGET;
+		} else if (pcArgType.equals("minecraft:message")) {
+			return ARG_TYPE_MESSAGE;
+		} else {
+			// We have a specialized type in PC which has no correspondance in PE. Sucks!
+			// Tried ARG_TYPE_RAWTEXT before, but that "swallows" everything to the end of the line
+			return ARG_TYPE_STRING;
+		}
 	}
 }
-
-/*
-TODO:
-fix aliases. PC has redirect, PE has an EnumSet as alias.
-
-add proper value for "optional" flag.
-
-It could be that these Enums correspond to special types..?
-NAME: itemType
-values.size(): 0
-
-NAME: enchantmentType
-values.size(): 0
-
-Idea: transform brigadier:bool to enum group "true|false". Maybe use soft enum for this?
- */
-
-/*
-ArgumentRegistry.a(new MinecraftKey("brigadier:bool"), BoolArgumentType.class, new ArgumentSerializerVoid(BoolArgumentType::bool));
-ArgumentRegistry.a(new MinecraftKey("brigadier:float"), FloatArgumentType.class, new ArgumentSerializerFloat());
-ArgumentRegistry.a(new MinecraftKey("brigadier:double"), DoubleArgumentType.class, new ArgumentSerializerDouble());
-ArgumentRegistry.a(new MinecraftKey("brigadier:integer"), IntegerArgumentType.class, new ArgumentSerializerInteger());
-ArgumentRegistry.a(new MinecraftKey("brigadier:string"), StringArgumentType.class, new ArgumentSerializerString());
-
-a(new MinecraftKey("minecraft:entity"), ArgumentEntity.class, new net.minecraft.server.v1_13_R2.ArgumentEntity.a());
-a(new MinecraftKey("minecraft:score_holder"), ArgumentScoreholder.class, new c());
-a(new MinecraftKey("minecraft:int_range"), b.class, new net.minecraft.server.v1_13_R2.ArgumentCriterionValue.b.a());
-a(new MinecraftKey("minecraft:float_range"), net.minecraft.server.v1_13_R2.ArgumentCriterionValue.a.class, new net.minecraft.server.v1_13_R2.ArgumentCriterionValue.a.a());
-
-a(new MinecraftKey("minecraft:game_profile"), ArgumentProfile.class, new ArgumentSerializerVoid(ArgumentProfile::a));
-a(new MinecraftKey("minecraft:block_pos"), ArgumentPosition.class, new ArgumentSerializerVoid(ArgumentPosition::a));
-a(new MinecraftKey("minecraft:column_pos"), ArgumentVec2I.class, new ArgumentSerializerVoid(ArgumentVec2I::a));
-a(new MinecraftKey("minecraft:vec3"), ArgumentVec3.class, new ArgumentSerializerVoid(ArgumentVec3::a));
-a(new MinecraftKey("minecraft:vec2"), ArgumentVec2.class, new ArgumentSerializerVoid(ArgumentVec2::a));
-a(new MinecraftKey("minecraft:block_state"), ArgumentTile.class, new ArgumentSerializerVoid(ArgumentTile::a));
-a(new MinecraftKey("minecraft:block_predicate"), ArgumentBlockPredicate.class, new ArgumentSerializerVoid(ArgumentBlockPredicate::a));
-a(new MinecraftKey("minecraft:item_stack"), ArgumentItemStack.class, new ArgumentSerializerVoid(ArgumentItemStack::a));
-a(new MinecraftKey("minecraft:item_predicate"), ArgumentItemPredicate.class, new ArgumentSerializerVoid(ArgumentItemPredicate::a));
-a(new MinecraftKey("minecraft:color"), ArgumentChatFormat.class, new ArgumentSerializerVoid(ArgumentChatFormat::a));
-a(new MinecraftKey("minecraft:component"), ArgumentChatComponent.class, new ArgumentSerializerVoid(ArgumentChatComponent::a));
-a(new MinecraftKey("minecraft:message"), ArgumentChat.class, new ArgumentSerializerVoid(ArgumentChat::a));
-a(new MinecraftKey("minecraft:nbt"), ArgumentNBTTag.class, new ArgumentSerializerVoid(ArgumentNBTTag::a));
-a(new MinecraftKey("minecraft:nbt_path"), ArgumentNBTKey.class, new ArgumentSerializerVoid(ArgumentNBTKey::a));
-a(new MinecraftKey("minecraft:objective"), ArgumentScoreboardObjective.class, new ArgumentSerializerVoid(ArgumentScoreboardObjective::a));
-a(new MinecraftKey("minecraft:objective_criteria"), ArgumentScoreboardCriteria.class, new ArgumentSerializerVoid(ArgumentScoreboardCriteria::a));
-a(new MinecraftKey("minecraft:operation"), ArgumentMathOperation.class, new ArgumentSerializerVoid(ArgumentMathOperation::a));
-a(new MinecraftKey("minecraft:particle"), ArgumentParticle.class, new ArgumentSerializerVoid(ArgumentParticle::a));
-a(new MinecraftKey("minecraft:rotation"), ArgumentRotation.class, new ArgumentSerializerVoid(ArgumentRotation::a));
-a(new MinecraftKey("minecraft:scoreboard_slot"), ArgumentScoreboardSlot.class, new ArgumentSerializerVoid(ArgumentScoreboardSlot::a));
-a(new MinecraftKey("minecraft:swizzle"), ArgumentRotationAxis.class, new ArgumentSerializerVoid(ArgumentRotationAxis::a));
-a(new MinecraftKey("minecraft:team"), ArgumentScoreboardTeam.class, new ArgumentSerializerVoid(ArgumentScoreboardTeam::a));
-a(new MinecraftKey("minecraft:item_slot"), ArgumentInventorySlot.class, new ArgumentSerializerVoid(ArgumentInventorySlot::a));
-a(new MinecraftKey("minecraft:resource_location"), ArgumentMinecraftKeyRegistered.class, new ArgumentSerializerVoid(ArgumentMinecraftKeyRegistered::a));
-a(new MinecraftKey("minecraft:mob_effect"), ArgumentMobEffect.class, new ArgumentSerializerVoid(ArgumentMobEffect::a));
-a(new MinecraftKey("minecraft:function"), ArgumentTag.class, new ArgumentSerializerVoid(ArgumentTag::a));
-a(new MinecraftKey("minecraft:entity_anchor"), ArgumentAnchor.class, new ArgumentSerializerVoid(ArgumentAnchor::a));
-a(new MinecraftKey("minecraft:item_enchantment"), ArgumentEnchantment.class, new ArgumentSerializerVoid(ArgumentEnchantment::a));
-a(new MinecraftKey("minecraft:entity_summon"), ArgumentEntitySummon.class, new ArgumentSerializerVoid(ArgumentEntitySummon::a));
-a(new MinecraftKey("minecraft:dimension"), ArgumentDimension.class, new ArgumentSerializerVoid(ArgumentDimension::a));
-*/
