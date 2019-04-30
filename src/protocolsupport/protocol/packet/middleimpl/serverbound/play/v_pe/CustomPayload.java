@@ -6,6 +6,7 @@ import protocolsupport.protocol.ConnectionImpl;
 import protocolsupport.protocol.packet.middle.serverbound.play.MiddleCustomPayload;
 import protocolsupport.protocol.serializer.MiscSerializer;
 import protocolsupport.protocol.serializer.StringSerializer;
+import protocolsupport.protocol.serializer.VarNumberSerializer;
 
 public class CustomPayload extends MiddleCustomPayload {
 
@@ -16,7 +17,7 @@ public class CustomPayload extends MiddleCustomPayload {
 	@Override
 	public void readFromClientData(ByteBuf clientdata) {
 		tag = StringSerializer.readString(clientdata, connection.getVersion(), 20);
-		data = MiscSerializer.readAllBytesSlice(clientdata);
+		data = MiscSerializer.readAllBytesSlice(clientdata, VarNumberSerializer.readVarInt(clientdata));
 	}
 
 }
