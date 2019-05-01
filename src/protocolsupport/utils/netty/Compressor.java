@@ -13,7 +13,7 @@ import protocolsupportbuildprocessor.Preload;
 @Preload
 public class Compressor {
 
-	protected static final int compressionLevel = JavaSystemProperty.getValue("compressionlevel", 3, Integer::parseInt);
+	protected static final int compressionLevel = JavaSystemProperty.getValue("compressionlevel", 10, Integer::parseInt);
 
 	static {
 		ProtocolSupport.logInfo("Compression level: " + compressionLevel);
