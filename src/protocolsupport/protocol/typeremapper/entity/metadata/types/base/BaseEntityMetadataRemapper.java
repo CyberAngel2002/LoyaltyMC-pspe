@@ -131,7 +131,7 @@ public class BaseEntityMetadataRemapper extends EntityMetadataRemapper {
 				PeMetaBase.FLAG_ON_FIRE,
 				PeMetaBase.FLAG_SNEAKING,
 				PeMetaBase.FLAG_SPRINTING,
-				PeMetaBase.FLAG_SWIMMING,
+				//PeMetaBase.FLAG_SWIMMING,
 				PeMetaBase.FLAG_INVISIBLE,
 				PeMetaBase.FLAG_GLIDING}
 		), ProtocolVersionsHelper.ALL_PE);
