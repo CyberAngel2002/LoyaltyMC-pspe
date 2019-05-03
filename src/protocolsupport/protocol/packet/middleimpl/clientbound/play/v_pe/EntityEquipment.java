@@ -16,7 +16,7 @@ import protocolsupport.utils.recyclable.RecyclableCollection;
 import protocolsupport.utils.recyclable.RecyclableEmptyList;
 import protocolsupport.utils.recyclable.RecyclableSingletonList;
 
-public class EntityEquipment extends MiddleEntityEquipment {A
+public class EntityEquipment extends MiddleEntityEquipment {
 
 	public EntityEquipment(ConnectionImpl connection) {
 		super(connection);
