@@ -149,7 +149,7 @@ public class PEPacketEncoder extends AbstractPacketEncoder {
 		registry.register(NetworkState.PLAY, ClientBoundPacket.PLAY_WINDOW_TRANSACTION_ID, InventoryConfirmTransaction::new);
 		registry.register(NetworkState.PLAY, ClientBoundPacket.PLAY_DECLARE_RECIPES, CraftingData::new);
 		registry.register(NetworkState.PLAY, ClientBoundPacket.PLAY_BED_ID, UseBed::new);
-		registry.register(NetworkState.PLAY, ClientBoundPacket.PLAY_DECLARE_COMMANDS, DeclareCommands::new);
+		// registry.register(NetworkState.PLAY, ClientBoundPacket.PLAY_DECLARE_COMMANDS, DeclareCommands::new);
 	}
 
 	public PEPacketEncoder(ConnectionImpl connection) {
