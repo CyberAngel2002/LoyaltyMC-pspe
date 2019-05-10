@@ -7,6 +7,7 @@ import protocolsupport.listeners.InternalPluginMessageRequest;
 import protocolsupport.protocol.ConnectionImpl;
 import protocolsupport.protocol.packet.middle.clientbound.play.MiddleCustomPayload;
 import protocolsupport.protocol.packet.middleimpl.ClientBoundPacketData;
+import protocolsupport.protocol.serializer.ArraySerializer;
 import protocolsupport.protocol.serializer.MerchantDataSerializer;
 import protocolsupport.protocol.serializer.StringSerializer;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
@@ -47,8 +48,7 @@ public class CustomPayload extends MiddleCustomPayload {
 	public static ClientBoundPacketData create(ProtocolVersion version, String tag, ByteBuf data) {
 		ClientBoundPacketData serializer = ClientBoundPacketData.create(PEPacketIDs.CUSTOM_EVENT);
 		StringSerializer.writeString(serializer, version, tag);
-		VarNumberSerializer.writeVarInt(serializer, data.readableBytes());
-		serializer.writeBytes(data);
+		ArraySerializer.writeVarIntByteArray(serializer, data);
 		return serializer;
 	}
 
