@@ -99,11 +99,13 @@ public class BaseEntityMetadataRemapper extends EntityMetadataRemapper {
 			mapPut.accept(PeMetaBase.MAX_AIR, new DataWatcherObjectShortLe(300));
 			// = PE Bounding Box =
 			PEEntityData pocketdata = PEDataValues.getEntityData(entity.getType());
-			if (pocketdata == null || pocketdata.getBoundingBox() == null) {
+			if (pocketdata == null) {
 				ProtocolSupport.logWarning("PE BoundingBox missing for entity: " + entity.getType());
 			} else {
-				mapPut.accept(PeMetaBase.BOUNDINGBOX_WIDTH, new DataWatcherObjectFloatLe(pocketdata.getBoundingBox().getWidth() * entitySize));
-				mapPut.accept(PeMetaBase.BOUNDINGBOX_HEIGTH, new DataWatcherObjectFloatLe(pocketdata.getBoundingBox().getHeight() * entitySize));
+				if (pocketdata.getBoundingBox() != null) {
+					mapPut.accept(PeMetaBase.BOUNDINGBOX_WIDTH, new DataWatcherObjectFloatLe(pocketdata.getBoundingBox().getWidth() * entitySize));
+					mapPut.accept(PeMetaBase.BOUNDINGBOX_HEIGTH, new DataWatcherObjectFloatLe(pocketdata.getBoundingBox().getHeight() * entitySize));
+				}
 			}
 			// = PE Size =
 			mapPut.accept(PeMetaBase.SCALE, new DataWatcherObjectFloatLe(entitySize));
@@ -125,7 +127,13 @@ public class BaseEntityMetadataRemapper extends EntityMetadataRemapper {
 		}
 		addRemap(new PeSimpleFlagAdder(new int[] {PeMetaBase.FLAG_GRAVITY}, new boolean[] {true}), ProtocolVersionsHelper.ALL_PE);
 		addRemap(new PeFlagRemapper(DataWatcherObjectIndex.Entity.FLAGS,
-			new int[] {1, 2, 4, 6, 8}, new int[] {PeMetaBase.FLAG_ON_FIRE, PeMetaBase.FLAG_SNEAKING, PeMetaBase.FLAG_SPRINTING, PeMetaBase.FLAG_INVISIBLE, PeMetaBase.FLAG_GLIDING}
+			new int[] {1, 2, 4, 5, 6, 8}, new int[] {
+				PeMetaBase.FLAG_ON_FIRE,
+				PeMetaBase.FLAG_SNEAKING,
+				PeMetaBase.FLAG_SPRINTING,
+				PeMetaBase.FLAG_SWIMMING,
+				PeMetaBase.FLAG_INVISIBLE,
+				PeMetaBase.FLAG_GLIDING}
 		), ProtocolVersionsHelper.ALL_PE);
 		addRemap(new PeSimpleFlagRemapper(DataWatcherObjectIndex.Entity.SILENT, PeMetaBase.FLAG_SILENT), ProtocolVersionsHelper.ALL_PE);
 		addRemap(new PeSimpleFlagRemapper(DataWatcherObjectIndex.Entity.NO_GRAVITY, -PeMetaBase.FLAG_GRAVITY), ProtocolVersionsHelper.ALL_PE);
