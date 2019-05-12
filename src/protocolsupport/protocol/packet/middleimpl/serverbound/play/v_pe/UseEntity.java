@@ -64,17 +64,17 @@ public class UseEntity extends ServerBoundMiddlePacket {
 				break;
 			}
 			case INTERACT_ATTACK: {
-				ProtocolSupport.logInfo("Interact packet type: INTERACT_ATTACK");
+				//ProtocolSupport.logInfo("Interact packet type: INTERACT_ATTACK");
 				packets.add(MiddleUseEntity.create(targetId, MiddleUseEntity.Action.ATTACK, null, UsedHand.MAIN));
 				break;
 			}
 			case INTERACT_AT: {
-				ProtocolSupport.logInfo("Interact packet type: INTERACT_AT");
+			//	ProtocolSupport.logInfo("Interact packet type: INTERACT_AT");
 				packets.add(MiddleUseEntity.create(targetId, MiddleUseEntity.Action.INTERACT_AT, new Vector(cX, cY, cZ), UsedHand.MAIN));
 				break;
 			}
 			default: {
-				ProtocolSupport.logInfo(MessageFormat.format("UNHANDLED PE INTERACT SUBTYPE: {0}", subTypeId));
+	//			ProtocolSupport.logInfo(MessageFormat.format("UNHANDLED PE INTERACT SUBTYPE: {0}", subTypeId));
 			}
 		}
 		return packets;
