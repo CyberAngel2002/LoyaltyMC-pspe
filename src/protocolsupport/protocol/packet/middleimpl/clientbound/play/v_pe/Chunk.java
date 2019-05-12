@@ -1,6 +1,7 @@
 package protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import protocolsupport.api.ProtocolVersion;
 import protocolsupport.listeners.InternalPluginMessageRequest;
@@ -25,6 +26,8 @@ import protocolsupport.utils.recyclable.RecyclableArrayList;
 import protocolsupport.utils.recyclable.RecyclableCollection;
 import protocolsupport.utils.recyclable.RecyclableEmptyList;
 
+import java.util.function.Consumer;
+
 public class Chunk extends MiddleChunk {
 
 	public Chunk(ConnectionImpl connection) {
@@ -47,13 +50,23 @@ public class Chunk extends MiddleChunk {
 			transformer.loadData(chunk, data, bitmask, cache.getAttributesCache().hasSkyLightInCurrentDimension(), full, tiles);
 			ClientBoundPacketData chunkpacket = ClientBoundPacketData.create(PEPacketIDs.CHUNK_DATA);
 			PositionSerializer.writePEChunkCoord(chunkpacket, chunk);
-			ArraySerializer.writeVarIntByteArray(chunkpacket, chunkdata -> {
+			Consumer<ByteBuf> chunkDataProducer = chunkdata -> {
 				transformer.writeLegacyData(chunkdata);
 				chunkdata.writeByte(0); //borders
 				for (TileEntity tile : transformer.remapAndGetTiles()) {
 					ItemStackSerializer.writeTag(chunkdata, true, version, tile.getNBT());
 				}
-			});
+			};
+			if (version.isAfterOrEq(ProtocolVersion.MINECRAFT_PE_1_12)) {
+				ByteBuf tmpBuf = Unpooled.buffer(512);
+				chunkDataProducer.accept(tmpBuf);
+				VarNumberSerializer.writeVarInt(chunkpacket, tmpBuf.readUnsignedByte());
+				chunkpacket.writeByte(0);
+				ArraySerializer.writeVarIntByteArray(chunkpacket, tmpBuf);
+
+			} else {
+				ArraySerializer.writeVarIntByteArray(chunkpacket, chunkDataProducer);
+			}
 			packets.add(chunkpacket);
 			return packets;
 		} else { //Request a full chunk.
