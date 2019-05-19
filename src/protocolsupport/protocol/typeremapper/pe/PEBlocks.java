@@ -28,7 +28,7 @@ import protocolsupport.zplatform.ServerPlatform;
 import protocolsupportbuildprocessor.Preload;
 
 @Preload
-public class PEBlocks {
+public class PEBlocks { //getPocketRuntimeId
 
 	private static final byte[] peBlockDef;
 	private static final byte[] peBlockDef112;
@@ -85,10 +85,6 @@ public class PEBlocks {
 		}
 		peBlockDef = MiscSerializer.readAllBytes(def);
 		peBlockDef112 = MiscSerializer.readAllBytes(def112);
-	}
-
-	public static int getPocketRuntimeId(PEBlock peBlock) {
-		return peBlocks.indexOf(peBlock);
 	}
 
 	public static int getPocketRuntimeId(PEBlock peBlock) {
