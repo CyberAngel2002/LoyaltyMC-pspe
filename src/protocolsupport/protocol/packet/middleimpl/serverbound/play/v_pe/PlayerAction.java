@@ -18,6 +18,7 @@ import protocolsupport.protocol.serializer.PositionSerializer;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
 import protocolsupport.protocol.utils.networkentity.NetworkEntity;
 import protocolsupport.protocol.typeremapper.pe.PEPacketIDs;
+import protocolsupport.protocol.utils.networkentity.NetworkEntity;
 import protocolsupport.protocol.utils.types.Position;
 import protocolsupport.protocol.utils.types.UsedHand;
 import protocolsupport.utils.recyclable.RecyclableCollection;
@@ -88,11 +89,11 @@ public class PlayerAction extends ServerBoundMiddlePacket {
 				return RecyclableSingletonList.create(serializer);
 			}
 			case START_BREAK: {
-				NetworkEntity itemFrame = cache.getPETileCache().getItemFrameAt(blockPosition);		
- 				if (itemFrame != null) {		
- 					return RecyclableSingletonList.create(MiddleUseEntity.create(itemFrame.getId(),		
- 						MiddleUseEntity.Action.ATTACK, null, UsedHand.MAIN));		
- 				}
+				NetworkEntity itemFrame = cache.getPETileCache().getItemFrameAt(blockPosition);
+				if (itemFrame != null) {
+					return RecyclableSingletonList.create(MiddleUseEntity.create(itemFrame.getId(),
+						MiddleUseEntity.Action.ATTACK, null, UsedHand.MAIN));
+				}
 				breakPosition = blockPosition.clone();
 				return RecyclableSingletonList.create(MiddleBlockDig.create(MiddleBlockDig.Action.START_DIG, breakPosition, face));
 			}

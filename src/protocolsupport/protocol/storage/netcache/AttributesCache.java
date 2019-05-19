@@ -27,6 +27,7 @@ public class AttributesCache {
 
 
 	protected String locale = I18NData.DEFAULT_LOCALE;
+	protected float maxHealth = 20.0F;
 
 	public void setLocale(String locale) {
 		this.locale = locale.toLowerCase();
@@ -34,17 +35,6 @@ public class AttributesCache {
 
 	public String getLocale() {
 		return locale;
-	}
-
-
-	protected float maxHealth = 20.0F;
-
-	public void setMaxHealth(float maxHealth) {
-		this.maxHealth = maxHealth;
-	}
-
-	public float getMaxHealth() {
-		return maxHealth;
 	}
 
 
@@ -85,7 +75,6 @@ public class AttributesCache {
 		return this.peIsFlying;
 	}
 
-
 	protected byte peLastVehicleYaw;
 
 	public void setPELastVehicleYaw(byte peLastVehicleYaw) {
@@ -95,7 +84,6 @@ public class AttributesCache {
 	public byte getPELastVehicleYaw() {
 		return peLastVehicleYaw;
 	}
-
 
 	@Override
 	public String toString() {

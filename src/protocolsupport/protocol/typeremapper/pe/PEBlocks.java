@@ -91,6 +91,10 @@ public class PEBlocks {
 		return peBlocks.indexOf(peBlock);
 	}
 
+	public static int getPocketRuntimeId(PEBlock peBlock) {
+		return peBlocks.indexOf(peBlock);
+	}
+
 	public static int getPocketRuntimeId(int pcRuntimeId) {
 		return pcToPeRuntimeId[pcRuntimeId];
 	}
