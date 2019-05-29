@@ -48,8 +48,7 @@ public class CustomPayload extends MiddleCustomPayload {
 	public static ClientBoundPacketData create(ProtocolVersion version, String tag, ByteBuf data) {
 		ClientBoundPacketData serializer = ClientBoundPacketData.create(PEPacketIDs.CUSTOM_EVENT);
 		StringSerializer.writeString(serializer, version, tag);
-		VarNumberSerializer.writeVarInt(serializer, data.readableBytes());
-		serializer.writeBytes(data);
+		ArraySerializer.writeVarIntByteArray(serializer, data);
 		return serializer;
 	}
 
