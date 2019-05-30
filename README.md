@@ -14,7 +14,6 @@ Important notes:
 
 Known issues:
 * [Anything that is not latest] Items in creative mode may not work as expected, or may not work at all
-* Online Mode set to true will generate errors or completely stop your server
 
 
 Known wontfix issues:
