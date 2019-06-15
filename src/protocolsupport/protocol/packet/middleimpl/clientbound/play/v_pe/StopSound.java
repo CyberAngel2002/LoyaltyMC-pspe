@@ -8,11 +8,8 @@ import protocolsupport.protocol.packet.middleimpl.ClientBoundPacketData;
 import protocolsupport.protocol.serializer.StringSerializer;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
 import protocolsupport.protocol.typeremapper.pe.PEPacketIDs;
-import protocolsupport.protocol.utils.NamespacedKeyUtils;
 import protocolsupport.utils.recyclable.RecyclableCollection;
 import protocolsupport.utils.recyclable.RecyclableSingletonList;
-
-import javax.xml.stream.events.Namespace;
 
 public class StopSound extends MiddleStopSound {
 
@@ -22,19 +19,13 @@ public class StopSound extends MiddleStopSound {
 
 	@Override
 	public RecyclableCollection<ClientBoundPacketData> toData() {
-		return RecyclableSingletonList.create(create(connection.getVersion(), name));
+		return RecyclableSingletonList.create(create(connection.getVersion()));
 	}
 
-	public static ClientBoundPacketData create(ProtocolVersion version, String name) {
+	public static ClientBoundPacketData create(ProtocolVersion version) {
 		ClientBoundPacketData serializer = ClientBoundPacketData.create(PEPacketIDs.STOP_SOUND);
-		if(name != null){
-			StringSerializer.writeString(serializer, version, NamespacedKeyUtils.fromString(name).getKey());
-			serializer.writeBoolean(false);
-		}
-		else{
-			StringSerializer.writeString(serializer, version, "");
-			serializer.writeBoolean(true);
-		}
+		StringSerializer.writeString(serializer, version, "");
+		serializer.writeBoolean(true);
 		return serializer;
 	}
 }
