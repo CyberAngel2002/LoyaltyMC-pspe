@@ -16,6 +16,10 @@ Known issues:
 * [Anything that is not latest] Items in creative mode may not work as expected, or may not work at all
 
 
+[latest download](http://panel.dragonlight.tk:9090/job/LoyaltyMC-PSPS/lastSuccessfulBuild/artifact/target/ProtocolSupport-PSPE-Wesley-5.jar)
+
+[jenkins](http://http://panel.dragonlight.tk:9090)
+
 Known wontfix issues:
 * [1.12 and earlier] Chests are seen as enderchests. (Intentional to prevent rendering glitches!)  
 [Check this plugin if you want different behaviour](https://www.spigotmc.org/resources/protocolsupportchestfix.59314/)
