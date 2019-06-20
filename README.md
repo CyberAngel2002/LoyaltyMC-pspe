@@ -18,7 +18,7 @@ Known issues:
 
 [latest download](http://panel.dragonlight.tk:9090/job/LoyaltyMC-PSPS/lastSuccessfulBuild/artifact/target/ProtocolSupport-PSPE-Wesley-5.jar)
 
-[jenkins](http://http://panel.dragonlight.tk:9090)
+[jenkins](http://panel.dragonlight.tk:9090)
 
 Known wontfix issues:
 * [1.12 and earlier] Chests are seen as enderchests. (Intentional to prevent rendering glitches!)  
