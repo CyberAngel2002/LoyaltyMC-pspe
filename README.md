@@ -3,7 +3,7 @@ LoyaltyMC-pspe
 
 ### warning this is a bleeding edge source and optimsed for my server
 
-Support 1.13, 1.12, 1.11, 1.10, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4.7 and bedrock 1.11, 1.10 ,1.9 clients on Spigot 1.13.2
+Support 1.13, 1.12, 1.11, 1.10, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4.7 and bedrock 1.12 ,1.11, 1.10 ,1.9 clients on Spigot 1.13.2
 
 WIP branch for adding MCPE clients support
 
