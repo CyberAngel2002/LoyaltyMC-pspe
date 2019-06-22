@@ -138,7 +138,7 @@ public class SoundRemapper {
 			registerRemapEntry("entity.bat.takeoff", "mob.bat.takeoff", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.villager.no", "mob.villager.no", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("entity.zombie.attack_iron_door", "mob.zombie.metal", ProtocolVersionsHelper.BEFORE_1_9);
-			registerRemapEntry("entity.villager.trade", "mob.villager.haggle", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
+			registerRemapEntry("entity.villager.trade", "mob.villager.haggle", ProtocolVersionsHelper.BEFORE_1_9);
 			registerRemapEntry("entity.villager.trading", "mob.villager.haggle", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
 			registerRemapEntry("item.firecharge.use", "mob.ghast.fireball", ProtocolVersionsHelper.BEFORE_1_9);
 			registerRemapEntry("entity.ghast.shoot", "mob.ghast.fireball", ProtocolVersionsHelper.BEFORE_1_9_AND_PE);
