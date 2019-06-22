@@ -56,7 +56,7 @@ public class EntityMetadata extends MiddleEntityMetadata {
 		boolean hasName = entity.getDataCache().getPeBaseFlag(PeMetaBase.FLAG_ALWAYS_SHOW_NAMETAG);
 		boolean isInvisible = entity.getDataCache().getPeBaseFlag(PeMetaBase.FLAG_INVISIBLE);
 		if (isInvisible && hasName) {
-			entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_INVISIBLE, ((CraftEntity)Bukkit.getEntity(entity.getUUID())).getHandle().isInvisible());
+			entity.getDataCache().setPeBaseFlag(PeMetaBase.FLAG_INVISIBLE, false);
 			entityRemapper.getRemappedMetadata().put(PeMetaBase.SCALE, new DataWatcherObjectFloatLe(0));
 			entityRemapper.getRemappedMetadata().put(PeMetaBase.BOUNDINGBOX_HEIGTH, new DataWatcherObjectFloatLe(0));
 			entityRemapper.getRemappedMetadata().put(PeMetaBase.BOUNDINGBOX_WIDTH, new DataWatcherObjectFloatLe(0));
