@@ -1,5 +1,5 @@
 [
-  {
+  { //shield
     "itemkey": "turtle_egg",
     "peid": -159,
     "pedata": 0
@@ -2276,7 +2276,7 @@
   },
   {
     "itemkey": "shield",
-    "peid": 268,
+    "peid": 513,
     "pedata": 0
   },
   {
