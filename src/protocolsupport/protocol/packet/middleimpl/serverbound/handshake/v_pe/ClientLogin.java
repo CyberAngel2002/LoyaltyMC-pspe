@@ -82,7 +82,7 @@ public class ClientLogin extends ServerBoundMiddlePacket {
 				connection.addMetadata(XUID_METADATA_KEY, JsonUtils.getString(chaindata.getObj2(), "XUID"));
 			}
 			JWSObject additionaldata = JWSObject.parse(new String(MiscSerializer.readBytes(logindata, logindata.readIntLE()), StandardCharsets.UTF_8));
-//			Map<String, String> clientinfo = Utils.GSON.fromJson(additionaldata.getPayload().toString(), new TypeToken<Map<String, String>>() {}.getType());
+			Map<String, String> clientinfo = Utils.GSON.fromJson(additionaldata.getPayload().toString(), new TypeToken<Map<String, String>>() {}.getType());
 			String rserveraddress = clientinfo.get("ServerAddress");
 			if (rserveraddress == null) {
 				throw new DecoderException("ServerAddress is missing");
