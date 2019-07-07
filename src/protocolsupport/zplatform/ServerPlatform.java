@@ -6,7 +6,6 @@ import net.minecraft.server.v1_13_R2.NetworkManager;
 import protocolsupport.api.ServerPlatformIdentifier;
 import protocolsupport.zplatform.impl.spigot.SpigotMiscUtils;
 import protocolsupport.zplatform.impl.spigot.SpigotPacketFactory;
-//import protocolsupport.zplatform.impl.spigot.injector.SpigotPlatformInjector;
 
 public class ServerPlatform {
 
@@ -39,12 +38,10 @@ public class ServerPlatform {
 	}
 
 	private final ServerPlatformIdentifier identifier;
-	//private final PlatformInjector injector;
 	private final PlatformUtils utils;
 	private final PlatformPacketFactory packetfactory;
 	private ServerPlatform(ServerPlatformIdentifier identifier, PlatformUtils miscutils, PlatformPacketFactory packetfactory) {
 		this.identifier = identifier;
-		//this.injector = injector;
 		this.utils = miscutils;
 		this.packetfactory = packetfactory;
 	}
@@ -52,18 +49,6 @@ public class ServerPlatform {
 	public ServerPlatformIdentifier getIdentifier() {
 		return identifier;
 	}
-
-	//public PlatformInjector getInjector() {
-		//return injector;
-	//}
-
-	//public void onEnable() {
-		//injector.onEnable();
-	//}
-
-	//public void onDisable() {
-		//injector.onDisable();
-	//}
 
 	public PlatformUtils getMiscUtils() {
 		return utils;
