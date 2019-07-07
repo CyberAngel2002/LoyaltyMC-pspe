@@ -6,7 +6,7 @@ import net.minecraft.server.v1_13_R2.NetworkManager;
 import protocolsupport.api.ServerPlatformIdentifier;
 import protocolsupport.zplatform.impl.spigot.SpigotMiscUtils;
 import protocolsupport.zplatform.impl.spigot.SpigotPacketFactory;
-import protocolsupport.zplatform.impl.spigot.injector.SpigotPlatformInjector;
+//import protocolsupport.zplatform.impl.spigot.injector.SpigotPlatformInjector;
 
 public class ServerPlatform {
 
@@ -19,7 +19,7 @@ public class ServerPlatform {
 		try {
 			NetworkManager.class.getDeclaredFields();
 			SpigotConfig.class.getDeclaredFields();
-			current = new ServerPlatform(ServerPlatformIdentifier.SPIGOT, new SpigotPlatformInjector(), new SpigotMiscUtils(), new SpigotPacketFactory());
+			current = new ServerPlatform(ServerPlatformIdentifier.SPIGOT, new SpigotMiscUtils(), new SpigotPacketFactory());
 		} catch (Throwable t) {
 		}
 		try {
