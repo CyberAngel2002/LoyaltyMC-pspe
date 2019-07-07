@@ -39,12 +39,12 @@ public class ServerPlatform {
 	}
 
 	private final ServerPlatformIdentifier identifier;
-	private final PlatformInjector injector;
+	//private final PlatformInjector injector;
 	private final PlatformUtils utils;
 	private final PlatformPacketFactory packetfactory;
-	private ServerPlatform(ServerPlatformIdentifier identifier, PlatformInjector injector, PlatformUtils miscutils, PlatformPacketFactory packetfactory) {
+	private ServerPlatform(ServerPlatformIdentifier identifier, PlatformUtils miscutils, PlatformPacketFactory packetfactory) {
 		this.identifier = identifier;
-		this.injector = injector;
+		//this.injector = injector;
 		this.utils = miscutils;
 		this.packetfactory = packetfactory;
 	}
@@ -53,17 +53,17 @@ public class ServerPlatform {
 		return identifier;
 	}
 
-	public PlatformInjector getInjector() {
-		return injector;
-	}
+	//public PlatformInjector getInjector() {
+		//return injector;
+	//}
 
-	public void onEnable() {
-		injector.onEnable();
-	}
+	//public void onEnable() {
+		//injector.onEnable();
+	//}
 
-	public void onDisable() {
-		injector.onDisable();
-	}
+	//public void onDisable() {
+		//injector.onDisable();
+	//}
 
 	public PlatformUtils getMiscUtils() {
 		return utils;
