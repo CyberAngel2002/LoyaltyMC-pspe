@@ -2,6 +2,7 @@ package protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe;
 
 import io.netty.buffer.ByteBuf;
 
+import protocolsupport.api.ProtocolVersion;
 import protocolsupport.listeners.InternalPluginMessageRequest;
 import protocolsupport.listeners.internal.ChunkUpdateRequest;
 import protocolsupport.protocol.ConnectionImpl;
@@ -32,8 +33,12 @@ import protocolsupport.utils.recyclable.RecyclableEmptyList;
 
 public class Chunk extends MiddleChunk {
 
-	protected static final int FLAG_RUNTIME = 1;
 	protected static final int SUBCHUNK_VERSION = 8;
+	protected static final int AIR_BLOCK_ID = 0;
+	protected static final int WATERLOG_BLOCK_ID = 54;
+
+	protected static final int FLAG_RUNTIME = 1;
+	protected static final int SINGLE_ID_STORAGE_HEADER = (1 << 1) | FLAG_RUNTIME;
 
 	protected final TileEntityRemapper tileRemapper = TileEntityRemapper.getRemapper(version);
 
@@ -42,7 +47,7 @@ public class Chunk extends MiddleChunk {
 	}
 
 	public RecyclableCollection<ClientBoundPacketData> toData() {
-		if (!full) { //request full chunk if not given, but still send partial chunk
+		if (!full && (blockMask & 0xF) != 0xF) { //request full chunk if not given
 			InternalPluginMessageRequest.receivePluginMessageRequest(connection, new ChunkUpdateRequest(coord));
 			return RecyclableEmptyList.get();
 		}
@@ -50,58 +55,57 @@ public class Chunk extends MiddleChunk {
 		RemappingTable.ArrayBasedIdRemappingTable biomeRemappingTable = PEDataValues.BIOME.getTable(connection.getVersion());
 		RecyclableArrayList<ClientBoundPacketData> packets = RecyclableArrayList.create();
 		ClientBoundPacketData chunkpacket = ClientBoundPacketData.create(PEPacketIDs.CHUNK_DATA);
-		PositionSerializer.writePEChunkCoord(chunkpacket, coord);
+		cache.getPEChunkMapCache().markSent(coord);
 
-		//1.12 does section count first, then payload. earlier does payload including section count
-		if (/* IS_1.12 */false) {
-			chunkpacket.writeByte(ChunkConstants.SECTION_COUNT_BLOCKS);
+		PositionSerializer.writePEChunkCoord(chunkpacket, coord);
+		if (version.isAfterOrEq(ProtocolVersion.MINECRAFT_PE_1_12)) {
+			chunkpacket.writeShortLE(ChunkConstants.SECTION_COUNT_BLOCKS);
 		}
 		ArraySerializer.writeVarIntByteArray(chunkpacket, chunkdata -> {
-			if (/* !IS_1.12 */true) {
+			if (version.isBefore(ProtocolVersion.MINECRAFT_PE_1_12)) {
 				chunkdata.writeByte(ChunkConstants.SECTION_COUNT_BLOCKS);
 			}
 			for (int sectionNumber = 0; sectionNumber < ChunkConstants.SECTION_COUNT_BLOCKS; sectionNumber++) {
-				ChunkSectonBlockData section = sections[sectionNumber];
-				chunkdata.writeByte(SUBCHUNK_VERSION);
-				if (section != null) {
-					int[] palette = new int[section.getPalette().length];
-					for (int i = 0 ; i < palette.length ; i++) { //generate palette first
-						int pcId = section.getPalette()[i] & 0xFFFF;
-						palette[i] = PEBlocks.getPocketRuntimeId(blockRemappingTable.getRemap(pcId));
-					}
+				if (Utils.isBitSet(blockMask, sectionNumber)) {
+					ChunkSectonBlockData section = sections[sectionNumber];
 					int bitsPerBlock = getPocketBitsPerBlock(section.getBitsPerBlock());
-					BlockStorageWriterPE blockstorage = new BlockStorageWriterPE(bitsPerBlock, ChunkConstants.BLOCKS_IN_SECTION);
-					BlockStorageWriterPE waterstorage = new BlockStorageWriterPE(1, ChunkConstants.BLOCKS_IN_SECTION); //Waterlogged -> second storage. Only true/false per block
-					int peIndex = 0;
-					for (int x = 0; x < 16; x++) { for (int z = 0; z < 16; z++) { for (int y = 0; y < 16; y++) {
-						int pcIndex = getPcIndex(x, y, z);
-						int runtimeId = section.getRuntimeId(pcIndex);
-						int pcId = section.getPalette()[runtimeId];
-						blockstorage.setBlockState(peIndex, runtimeId);
-						if (PEBlocks.isPCBlockWaterlogged(pcId)) {
-							waterstorage.setBlockState(peIndex, 1);
+					BlockStorageWriterPE blockstorage = new BlockStorageWriterPE(bitsPerBlock);
+					BlockStorageWriterPE waterstorage = new BlockStorageWriterPE(1); //Waterlogged -> second storage. Only true/false per block
+					int peIndex = 0; //subchunk iterator order is different for PE
+					for (int x = 0; x < 16; x++) {
+						for (int z = 0; z < 16; z++) {
+							for (int y = 0; y < 16; y++) {
+								int pcIndex = getPcIndex(x, y, z);
+								int runtimeId = section.getRuntimeId(pcIndex);
+								int pcId = section.getPalette()[runtimeId];
+								blockstorage.setBlockState(peIndex, runtimeId);
+								if (PEBlocks.isPCBlockWaterlogged(pcId)) {
+									waterstorage.setBlockState(peIndex, 1);
+								}
+								peIndex++;
+							}
 						}
-						peIndex++;
-					}}}
+					}
+					chunkdata.writeByte(SUBCHUNK_VERSION);
 					chunkdata.writeByte(2); //blockstorage count.
 					chunkdata.writeByte((bitsPerBlock << 1) | FLAG_RUNTIME);
 					for (int word : blockstorage.getBlockData()) {
 						chunkdata.writeIntLE(word);
 					}
-					ArraySerializer.writeSVarIntSVarIntArray(chunkdata, palette);
-					chunkdata.writeByte((1 << 1) | FLAG_RUNTIME); //Water storage.
+					VarNumberSerializer.writeSVarInt(chunkdata, section.getPalette().length);
+					for (int pcId : section.getPalette()) {
+						VarNumberSerializer.writeSVarInt(chunkdata, PEBlocks.getPocketRuntimeId(
+							blockRemappingTable.getRemap(pcId & 0xFFFF)));
+					}
+					chunkdata.writeByte(SINGLE_ID_STORAGE_HEADER);
 					for (int word : waterstorage.getBlockData()) {
 						chunkdata.writeIntLE(word);
 					}
 					VarNumberSerializer.writeSVarInt(chunkdata, 2); //Palette size
-					VarNumberSerializer.writeSVarInt(chunkdata, 0); //Palette air
-					VarNumberSerializer.writeSVarInt(chunkdata, 54); //Palette water
+					VarNumberSerializer.writeSVarInt(chunkdata, AIR_BLOCK_ID); //Palette air
+					VarNumberSerializer.writeSVarInt(chunkdata, WATERLOG_BLOCK_ID); //Palette water
 				} else {
-					chunkdata.writeByte(1); //blockstorage count.
-					chunkdata.writeByte((1 << 1) | FLAG_RUNTIME);
-					chunkdata.writeZero(512);
-					VarNumberSerializer.writeSVarInt(chunkdata, 1); //Palette size
-					VarNumberSerializer.writeSVarInt(chunkdata, 0); //Palette: Air
+					writeEmptySubChunk(chunkdata);
 				}
 			}
 			chunkdata.writeZero(512); //heightmap (will be recalculated by client anyway)
@@ -127,7 +131,7 @@ public class Chunk extends MiddleChunk {
 		return packets;
 	}
 
-	protected static int getPocketBitsPerBlock(int pcBitsPerBlock) {
+	protected static final int getPocketBitsPerBlock(int pcBitsPerBlock) {
 		if (pcBitsPerBlock == 7) {
 			return 8;
 		} else if (pcBitsPerBlock > 8) {
@@ -136,67 +140,40 @@ public class Chunk extends MiddleChunk {
 		return pcBitsPerBlock;
 	}
 
-	protected static int getPcIndex(int x, int y, int z) {
+	protected static final int getPcIndex(int x, int y, int z) {
 		return (y << 8) | (z << 4) | (x);
 	}
 
-	public static void addFakeChunks(RecyclableCollection<ClientBoundPacketData> packets, ChunkCoord coord) {
+	public static void addFakeChunks(RecyclableCollection<ClientBoundPacketData> packets, ChunkCoord coord, ProtocolVersion version) {
 		for (int x = -1; x <= 1; x++) {
 			for (int z = -1; z <= 1; z++) {
-				packets.add(createEmptyChunk(new ChunkCoord(coord.getX() + x, coord.getZ() + z)));
+				packets.add(createEmptyChunk(new ChunkCoord(coord.getX() + x, coord.getZ() + z), version));
 			}
 		}
 	}
 
-	public static void writeEmptyChunk(ByteBuf out, ChunkCoord chunk) {
-		PositionSerializer.writePEChunkCoord(out, chunk);
-		out.writeBytes(EmptyChunk.getPEChunkData());
+	public static void writeEmptySubChunk(ByteBuf out) {
+		out.writeByte(SUBCHUNK_VERSION);
+		out.writeByte(1); //blockstorage count.
+		out.writeByte(SINGLE_ID_STORAGE_HEADER);
+		out.writeZero(512);
+		VarNumberSerializer.writeSVarInt(out, 1); //Palette size
+		VarNumberSerializer.writeSVarInt(out, AIR_BLOCK_ID); //Palette: Air
 	}
 
-	public static ClientBoundPacketData createEmptyChunk(ChunkCoord chunk) {
+	public static void writeEmptyChunk(ByteBuf out, ChunkCoord chunk, ProtocolVersion version) {
+		PositionSerializer.writePEChunkCoord(out, chunk);
+		if (version.isAfterOrEq(ProtocolVersion.MINECRAFT_PE_1_12)) {
+			out.writeBytes(EmptyChunk.getPEChunkData112());
+		} else {
+			out.writeBytes(EmptyChunk.getPEChunkData());
+		}
+	}
+
+	public static ClientBoundPacketData createEmptyChunk(ChunkCoord chunk, ProtocolVersion version) {
 		ClientBoundPacketData serializer = ClientBoundPacketData.create(PEPacketIDs.CHUNK_DATA);
-		writeEmptyChunk(serializer, chunk);
+		writeEmptyChunk(serializer, chunk, version);
 		return serializer;
 	}
-
-	public static void writeChunkPublisherUpdate(ByteBuf out, int x, int y, int z) {
-		VarNumberSerializer.writeSVarInt(out, x);
-		VarNumberSerializer.writeVarInt(out, y);
-		VarNumberSerializer.writeSVarInt(out, z);
-		VarNumberSerializer.writeVarInt(out, 512); //radius, gets clamped by client
-	}
-
-	public static ClientBoundPacketData createChunkPublisherUpdate(int x, int y, int z) {
-		ClientBoundPacketData networkChunkUpdate = ClientBoundPacketData.create(PEPacketIDs.NETWORK_CHUNK_PUBLISHER_UPDATE_PACKET);
-		writeChunkPublisherUpdate(networkChunkUpdate, x, y, z);
-		return networkChunkUpdate;
-	}
-
-	/*public static class BlockStorageWriterPE {
-
-		public final int[] blockdata;
-		public final int bitsPerBlock;
-		public final int blocksPerWord;
-		public final int singleValMask;
-
-		public BlockStorageWriterPE(int bitsPerBlock) {
-			assert(bitsPerBlock <= Integer.SIZE);
-			this.bitsPerBlock = bitsPerBlock;
-			blocksPerWord = Integer.SIZE / bitsPerBlock;
-			blockdata = new int[(ChunkConstants.BLOCKS_IN_SECTION + blocksPerWord - 1) / blocksPerWord];
-			singleValMask = (1 << bitsPerBlock) - 1;
-		}
-
-		public void setBlockState(int index, int blockstate) {
-			final int arrIndex = index / blocksPerWord;
-			final int bitIndex = (index % blocksPerWord) * bitsPerBlock;
-			if (singleValMask >> bitsPerBlock != 0) {
-				throw new IllegalArgumentException("Block ID too large for palette's bitsPerBlock");
-			}
-			//blockdata[arrIndex] = ((blockdata[arrIndex] & ~(singleValMask << bitIndex)) | ((blockstate & singleValMask) << bitIndex));
-			blockdata[arrIndex] = blockdata[arrIndex] | (blockstate << bitIndex);
-		}
-
-	}*/
 
 }
