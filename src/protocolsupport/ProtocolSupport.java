@@ -77,6 +77,7 @@ public class ProtocolSupport extends JavaPlugin {
 					throw new RuntimeException("Class is in preload list, but wasn't found", e);
 				}
 			});
+			ServerPlatform.get().getInjector().onLoad();
 		} catch (Throwable t) {
 			getLogger().log(Level.SEVERE, "Error when loading, make sure you are using supported server version", t);
 			Bukkit.shutdown();
@@ -85,6 +86,7 @@ public class ProtocolSupport extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+		ServerPlatform.get().getInjector().onEnable();
 		getCommand("protocolsupport").setExecutor(new CommandHandler());
 		getServer().getPluginManager().registerEvents(new FeatureEmulation(), this);
 		getServer().getPluginManager().registerEvents(new ReloadCommandBlocker(), this);
@@ -101,6 +103,7 @@ public class ProtocolSupport extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		Bukkit.shutdown();
+		ServerPlatform.get().getInjector().onDisable();
 		if (peserver != null) {
 			peserver.stop();
 		}
