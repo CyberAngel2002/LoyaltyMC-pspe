@@ -2,6 +2,8 @@ package protocolsupport.protocol.typeremapper.chunk;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import protocolsupport.api.ProtocolVersion;
+import protocolsupport.protocol.packet.middleimpl.clientbound.play.v_pe.Chunk;
 import protocolsupport.protocol.serializer.ArraySerializer;
 import protocolsupport.protocol.serializer.MiscSerializer;
 import protocolsupport.protocol.serializer.VarNumberSerializer;
@@ -37,25 +39,24 @@ public class EmptyChunk {
 		ByteBuf serializer = Unpooled.buffer();
 		ArraySerializer.writeVarIntByteArray(serializer, chunkdata -> {
 			chunkdata.writeByte(1); //1 section
-			chunkdata.writeByte(8); //New subchunk version!
-			chunkdata.writeByte(1); //Zero blockstorages
-			chunkdata.writeByte((1 << 1) | 1);  //Runtimeflag and palette id.
-			chunkdata.writeZero(512);
-			VarNumberSerializer.writeSVarInt(chunkdata, 1); //Palette size
-			VarNumberSerializer.writeSVarInt(chunkdata, 0); //Air
+			Chunk.writeEmptySubChunk(chunkdata, ProtocolVersion.MINECRAFT_PE_1_8);
 			chunkdata.writeZero(512); //heightmap.
 			chunkdata.writeZero(256); //Biomedata.
 			chunkdata.writeByte(0); //borders
 		});
-		serializer.markReaderIndex();
 		fakePEChunkData = MiscSerializer.readAllBytes(serializer);
-		serializer.resetReaderIndex();
+	}
 
-		ByteBuf tmpBuf = Unpooled.buffer(512);
-		VarNumberSerializer.writeVarInt(tmpBuf, serializer.readUnsignedByte());
-		tmpBuf.writeByte(0);
-		ArraySerializer.writeVarIntByteArray(tmpBuf, serializer);
-		fakePEChunkData112 = MiscSerializer.readAllBytes(tmpBuf);
+	static {
+		ByteBuf serializer = Unpooled.buffer();
+		serializer.writeShortLE(1); //1 section
+		ArraySerializer.writeVarIntByteArray(serializer, chunkdata -> {
+			Chunk.writeEmptySubChunk(chunkdata, ProtocolVersion.MINECRAFT_PE_1_12);
+			chunkdata.writeZero(512); //heightmap.
+			chunkdata.writeZero(256); //Biomedata.
+			chunkdata.writeByte(0); //borders
+		});
+		fakePEChunkData112 = MiscSerializer.readAllBytes(serializer);
 	}
 
 }

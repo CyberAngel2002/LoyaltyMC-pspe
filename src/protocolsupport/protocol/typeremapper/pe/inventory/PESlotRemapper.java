@@ -9,8 +9,8 @@ import protocolsupport.protocol.storage.netcache.NetworkDataCache;
 import protocolsupport.protocol.storage.netcache.PEInventoryCache;
 import protocolsupport.protocol.storage.netcache.WindowCache;
 import protocolsupport.protocol.typeremapper.pe.inventory.PEInventory.PESource;
-import protocolsupport.protocol.utils.networkentity.NetworkEntity;
-import protocolsupport.protocol.utils.types.NetworkItemStack;
+import protocolsupport.protocol.types.networkentity.NetworkEntity;
+import protocolsupport.protocol.types.NetworkItemStack;
 import protocolsupport.utils.recyclable.RecyclableArrayList;
 
 public class PESlotRemapper {
@@ -43,7 +43,7 @@ public class PESlotRemapper {
 				}
 				break;
 			}
-			case BREWING: {
+			case BREWING_STAND: {
 				if (slot == 3) {
 					slot = 0;
 				} else if (slot <= 2) {
@@ -69,8 +69,7 @@ public class PESlotRemapper {
 					}
 				}
 			}
-			case ENCHANT: {
-			//	System.out.println("remapping enchant, slot: " + slot);
+			case ENCHANTMENT: {
 				if (slot == 0) {
 					invCache.getFakeEnchanting().setInputOutputStack(item);
 					return invCache.getFakeEnchanting().updateInventory(cache, version);
@@ -89,7 +88,7 @@ public class PESlotRemapper {
 					return InventorySetSlot.create(version, locale, PESource.POCKET_INVENTORY, slot >= 28 ? slot - 28 : slot + 8, item);
 				}
 			}
-			case CRAFTING_TABLE: {
+			case CRAFTING: {
 				if (slot == 0) {
 					return InventorySetSlot.create(version, locale, PESource.POCKET_CRAFTING_RESULT, 0, item);
 				} else if (slot < 10) {
@@ -104,7 +103,7 @@ public class PESlotRemapper {
 					return InventorySetSlot.create(version, locale, PESource.POCKET_INVENTORY, slot - 1, item);
 				}
 			}
-			case VILLAGER: {
+			case MERCHANT: {
 				switch (slot) {
 					case 0: {
 						return InventorySetSlot.create(version, locale, PESource.POCKET_TRADE_INPUT_1, 0, item);
@@ -168,7 +167,7 @@ public class PESlotRemapper {
 				packets.add(InventorySetItems.create(version, locale, PESource.POCKET_OFFHAND, peOffhand));
 				break;
 			}
-			case BREWING: {
+			case BREWING_STAND: {
 				NetworkItemStack[] brewingSlots = new NetworkItemStack[5];
 				NetworkItemStack[] peInventory = new NetworkItemStack[36];
 				System.arraycopy(items,  0, brewingSlots, 1,  3);
@@ -196,7 +195,7 @@ public class PESlotRemapper {
 				packets.add(InventorySetItems.create(version, locale, PESource.POCKET_INVENTORY, peInventory));
 				break;
 			}
-			case ENCHANT: { //Faked with hopper thingy, server sends the two slots though.
+			case ENCHANTMENT: { //Faked with hopper thingy, server sends the two slots though.
 				NetworkItemStack[] peInventory = new NetworkItemStack[36];
 				invCache.getFakeEnchanting().setInputOutputStack(items[0]);
 				invCache.getFakeEnchanting().setLapisStack(items[1]);
@@ -216,7 +215,7 @@ public class PESlotRemapper {
 				packets.add(InventorySetItems.create(version, locale, PESource.POCKET_INVENTORY, peInventory));
 				break;
 			}
-			case CRAFTING_TABLE: {
+			case CRAFTING: {
 				NetworkItemStack[] craftingGridResult = new NetworkItemStack[1];
 				NetworkItemStack[] craftingSlots = new NetworkItemStack[9];
 				NetworkItemStack[] peInventory = new NetworkItemStack[36];
@@ -229,7 +228,7 @@ public class PESlotRemapper {
 				packets.add(InventorySetItems.create(version, locale, PESource.POCKET_INVENTORY, peInventory));
 				break;
 			}
-			case VILLAGER: {
+			case MERCHANT: {
 				NetworkItemStack[] peTradeSA = new NetworkItemStack[1];
 				NetworkItemStack[] peTradeSB = new NetworkItemStack[1];
 				NetworkItemStack[] peTradeResult = new NetworkItemStack[1];
@@ -312,7 +311,7 @@ public class PESlotRemapper {
 				}
 				break;
 			}
-			case BREWING: {
+			case BREWING_STAND: {
 				if (transaction.getInventoryId() == winCache.getOpenedWindowId()) {
 					if (transaction.getSlot() == 0) {
 						transaction.setSlot(3);
@@ -344,7 +343,7 @@ public class PESlotRemapper {
 				transaction.setSlot(invSlotToContainerSlot(transaction.getInventoryId(), 3, transaction.getSlot()));
 				break;
 			}
-			case ENCHANT: {
+			case ENCHANTMENT: {
 				//We fake enchanting with hoppers, but the server slots are still 0 and 1 for the inventory.
 				transaction.setSlot(invSlotToContainerSlot(transaction.getInventoryId(), 2, transaction.getSlot()));
 				break;
@@ -358,7 +357,7 @@ public class PESlotRemapper {
 					break;
 				}
 			}
-			case CRAFTING_TABLE: {
+			case CRAFTING: {
 				switch (transaction.getInventoryId()) {
 					case PESource.POCKET_CRAFTING_RESULT: {
 						transaction.setSlot(0);
@@ -386,7 +385,7 @@ public class PESlotRemapper {
 				}
 				break;
 			}
-			case VILLAGER: {
+			case MERCHANT: {
 				switch (transaction.getInventoryId()) {
 					case PESource.POCKET_TRADE_INPUT_1: {
 						transaction.setSlot(0);
